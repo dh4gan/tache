@@ -4,6 +4,8 @@ subroutine compute_tensor
 ! to be classified
 !
 
+real, dimension(3,3) :: tensor_element
+real, allocatable, dimension(:,:,:) :: tensor
 
 ! If this is an SPH file, require neighbour lists to compute derivatives
 if(filetype=='SPH') then

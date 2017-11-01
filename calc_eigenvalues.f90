@@ -1,5 +1,16 @@
 subroutine calc_eigenvalues 
+!
+! Subroutine calculates the tensor eigenvalues/eigenvectors
+!
 
+use tachedata
+implicit none
+
+integer, parameter :: it_max = 10
+integer :: it_num,rot_num
+
+real, dimension(3,3) :: tensor_element,eigenvec
+real, dimension(3) :: eigen
 
 print*, "Calculating Tensor Eigenvalues"
 
@@ -14,7 +25,7 @@ if(filetype=='SPH') then
 
       call particle_percent_complete(ipart,npart,percentcount,10.0)
       
-      tensor(:,:) = velocityshear(:,:,ipart)
+      tensor_element(:,:) = tensor(:,:,ipart)
       eigen(:) = 0.0
       eigenvalues(:,ipart) = 0.0
       
@@ -23,7 +34,7 @@ if(filetype=='SPH') then
       it_num = 0
       rot_num = 0
       
-      call jacobi_eigenvalue(3,tensor, it_max, eigenvec, eigen,it_num, rot_num)
+      call jacobi_eigenvalue(3,tensor_element, it_max, eigenvec, eigen,it_num, rot_num)
       
       eigenvalues(:,ipart) = eigen(:)
       eigenvectors(:,:,ipart) = eigenvec(:,:)

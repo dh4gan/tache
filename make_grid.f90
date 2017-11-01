@@ -25,9 +25,38 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
   
   ! Set up grid in x,y,z
 
+  ! Find maximum and minimum values for all coordinates
+  xmax = 0.0
+  ymax = 0.0
+  zmax = 0.0
+
+  allocate(isort(npart))
+  allocate(iorig(npart))
+
+  ngas = 0
+  do ipart=1,npart
+     ! rho(ipart) = xyzmh(4,ipart)/(xyzmh(5,ipart)**3) ! DEBUG LINE
+     isort(ipart) = ipart
+     iorig(ipart) = ipart
+     
+     if(iphase(ipart)==0) ngas = ngas +1
+     
+     IF(abs(xyzmh(1,ipart))> xmax) xmax = abs(xyzmh(1,ipart))
+     IF(abs(xyzmh(2,ipart))> ymax) ymax = abs(xyzmh(2,ipart))
+     IF(abs(xyzmh(3,ipart))> zmax) zmax = abs(xyzmh(3,ipart))
+     
+  enddo
+  
+  print*,'-----------------------------------------'
+  print*, "Maximum values for spatial co-ordinates: "
+  print*, "x: ", xmax
+  print*, "y: ", ymax
+  print*, "z: ", zmax
+  
+  
   ! Grid spacing
   dgrid = 2.0*hmean
-
+  
   if(dgrid< dgridmin) then
      print*, 'Calculated dgrid too small: ', hmean, dgrid
      dgrid = dgridmin

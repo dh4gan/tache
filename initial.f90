@@ -54,6 +54,7 @@ character(8),parameter :: paramfile='tache.params'
 
   read(20,*) nfiles
 
+  allocate(filename(nfiles))
   do ifile=1,nfiles
      read(20,*) filename(ifile)
   enddo
@@ -66,6 +67,11 @@ character(8),parameter :: paramfile='tache.params'
      tensorchar='V'
   endif
   
+  allocate(gravfile(nfiles))
+  allocate(potfile(nfiles))
+  allocate(eigenfile(nfiles))
+  allocate(vectorfile(nfiles))
+
   do ifile=1,nfiles
      write(num, '(I4.3)')i
 

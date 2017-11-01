@@ -1,15 +1,13 @@
-module treedata
+module sphneighbourdata
 
   !-----------------------------------------------------------------------
-  ! Data module for saving data on rays and trees
-  ! PJC 20/05/2008
+  ! Data module for saving data on SPH neighbours
   ! DHF 01/09/2009
   !-----------------------------------------------------------------------
   
   implicit none
   save
-  
-  
+ 
   !-------------------Single values---------------------------------------
   
   ! Integers
@@ -34,33 +32,31 @@ module treedata
   
   integer :: ncells, ngridx,ngridy,ngridz, cellmax, nparticlelist, ncellrange
   integer, allocatable,dimension(:) :: particlelist, cellist,isortcellpart
-  
-  !integer, allocatable, dimension (:,:,:) :: cellID
 
   real :: dgrid
   
 
 contains
 
-subroutine get_cellID(cellID, icell,jcell,kcell,nx,ny,nz)
-! Simple routine to get a unique ID for every cell in a 3D Cartesian grid
-
-  integer :: cellID, icell, jcell,kcell
-  integer :: nx,ny,nz
-
-  if(icell >nx .or. jcell >ny .or. kcell>nz) then
-     print*, 'Error in get_cellID! cell index exceeds grid limits'
-     print*, 'Cell: ',icell,jcell,kcell
-     print*, 'Grid Limits: ', nx,ny,nz
-  endif
-
-  if(nz>1) then
-     cellID = icell + nx*(jcell-1) + (kcell-1)*nx*ny
-  else
-     cellID = icell + (jcell-1)*nx
-  endif
-
-return
-end subroutine get_cellID
-
-end module treedata
+  subroutine get_cellID(cellID, icell,jcell,kcell,nx,ny,nz)
+    ! Simple routine to get a unique ID for every cell in a 3D Cartesian grid
+    
+    integer :: cellID, icell, jcell,kcell
+    integer :: nx,ny,nz
+    
+    if(icell >nx .or. jcell >ny .or. kcell>nz) then
+       print*, 'Error in get_cellID! cell index exceeds grid limits'
+       print*, 'Cell: ',icell,jcell,kcell
+       print*, 'Grid Limits: ', nx,ny,nz
+    endif
+    
+    if(nz>1) then
+       cellID = icell + nx*(jcell-1) + (kcell-1)*nx*ny
+    else
+       cellID = icell + (jcell-1)*nx
+    endif
+    
+    return
+  end subroutine get_cellID
+  
+end module sphneighbourdata

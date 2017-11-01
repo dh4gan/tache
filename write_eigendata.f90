@@ -1,5 +1,11 @@
 subroutine write_eigendata
 
+  integer,allocatable,dimension(:) :: eigenpart
+  real, allocatable, dimension (:,:,:) :: eigenvecbin
+  real, allocatable, dimension(:,:) :: eigenvalues, eigenbin
+  real, allocatable, dimension(:) :: xbin, ybin, zbin
+  
+
   print*, '----------------------'
   print*, 'Writing to file ', TRIM(eigenfile(n))
 
