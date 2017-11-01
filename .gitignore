@@ -1,0 +1,4 @@
+*.o
+*.mod
+*~
+sph_velocityshear_tensor
