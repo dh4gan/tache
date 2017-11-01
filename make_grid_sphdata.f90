@@ -1,4 +1,4 @@
-SUBROUTINE make_grid(sphfile, hmean,dgridmin)
+SUBROUTINE make_grid_sphdata
   ! Written 17/2/15 by dh4gan
   ! This subroutine makes a regular grid in x,y,z and 
   ! bins the particles accordingly
@@ -6,53 +6,27 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
   ! x face = -xmax +(i-1)*dgrid and so on for y,z
   ! x centre = -xmax +(i-1)*dgrid +0.5*dgrid and so on for y,z
   
-  ! Find a particle's cell, location (xi,yi,zi):
+  ! Finding a particle's cell, location (xi,yi,zi):
   
   ! icell = int((xi-xmin)/dgrid +1) = int((xi+xmax)/dgrid +1)
   ! (and so on for jcell, kcell (y,z)
 
-  USE sphgravdata
-  USE treedata
+  USE sphdata
+  USE sphneighbourdata
   
   IMPLICIT NONE  
 
-  character(7) :: sphfile
+  integer :: ielement, icell,jcell,kcell
+  integer :: thiscell, celltot, neigen
 
-  integer :: ielement, ix,iy,iz, icell,jcell,kcell
-  integer :: thiscell, counter, celltot, ngas
+  real :: hmean,dmax
 
-  real :: hmean,dgridmin
   
-  ! Set up grid in x,y,z
-
-  ! Find maximum and minimum values for all coordinates
-  xmax = 0.0
-  ymax = 0.0
-  zmax = 0.0
-
-  allocate(isort(nelement))
-  allocate(iorig(nelement))
-
-  ngas = 0
-  do ielement=1,nelement
-     ! rho(ielement) = xyzmh(4,ielement)/(xyzmh(5,ielement)**3) ! DEBUG LINE
-     isort(ielement) = ielement
-     iorig(ielement) = ielement
-     
-     if(iphase(ielement)==0) ngas = ngas +1
-     
-     IF(abs(xyzmh(1,ielement))> xmax) xmax = abs(xyzmh(1,ielement))
-     IF(abs(xyzmh(2,ielement))> ymax) ymax = abs(xyzmh(2,ielement))
-     IF(abs(xyzmh(3,ielement))> zmax) zmax = abs(xyzmh(3,ielement))
-     
-  enddo
+  ! Set up uniform grid in x,y,z 
   
-  print*,'-----------------------------------------'
-  print*, "Maximum values for spatial co-ordinates: "
-  print*, "x: ", xmax
-  print*, "y: ", ymax
-  print*, "z: ", zmax
-  
+  dmax = maxval(rmax)
+
+  dgridmin = dmax/real(ngridmax)
   
   ! Grid spacing
   dgrid = 2.0*hmean
@@ -158,7 +132,7 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
      
      if(iphase(ielement)/=0) cycle
 
-     ngas = ngas +1
+     neigen = neigen +1
      icell = int((xyzmh(1,ielement)+xmax)/dgrid +1)
      jcell = int((xyzmh(2,ielement)+ymax)/dgrid +1)
      kcell = int((xyzmh(3,ielement)+zmax)/dgrid +1)
@@ -198,4 +172,4 @@ print*, 'Sort complete'
 
 
 return
-end subroutine make_grid
+end subroutine make_grid_sphdata

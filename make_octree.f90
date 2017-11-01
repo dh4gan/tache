@@ -1,7 +1,7 @@
 SUBROUTINE make_octree(sphfile)
 
-  USE sphgravdata	
-  USE treedata
+  USE sphdata	
+  USE sphneighbourdata
   IMPLICIT NONE  
   integer :: ipar,n_open,binlog,ic,ielement,j,l
   integer :: flag,testnode,maxcheck, n_leaf

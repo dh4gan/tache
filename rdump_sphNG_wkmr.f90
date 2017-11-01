@@ -1,12 +1,12 @@
-      subroutine rdump(filename,rcheck,skip)
+      subroutine rdump_sphNG_wkmr(filename,rcheck,skip)
 
 !----------------------------------------------------------------------
-! Subroutine to read in dump files.
+! Subroutine to read in old style sphNG dump files.
 ! Updated from rdump_PJC.f, to be compatible with Fortan 90/95
 !
 ! PJC 08/05/2008
 !----------------------------------------------------------------------
-      use sphgravdata
+      use sphdata
         
       implicit none
       integer(kind=4) :: int1,int2,itest1,itest2,itest3,itest4
@@ -191,4 +191,4 @@
       return
      
     
-      end subroutine rdump
+    end subroutine rdump_sphNG_wkmr

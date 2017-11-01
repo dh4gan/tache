@@ -21,9 +21,9 @@
 !  Ensure module is scoped correctly or data may be lost - if you don't
 !  feel like being careful, use global scope ('USE rbin' in the main program).
 
-SUBROUTINE rdump(filename,rcheck, skip)
+SUBROUTINE rdump_sphNG_iab(filename,rcheck, skip)
 
-use sphgravdata
+use sphdata
 
 implicit none 
 integer :: check, rcheck,skip
@@ -73,7 +73,7 @@ skip =0
       close(10)
 
 return 
-END SUBROUTINE rdump
+END SUBROUTINE rdump_sphNG_iab
 
 
 ! Subroutine reads the data file
@@ -82,7 +82,7 @@ END SUBROUTINE rdump
 
   SUBROUTINE read_sphng_data
 
-    use sphgravdata
+    use sphdata
     IMPLICIT NONE
     integer :: ii
     !If only 1 block exists or non-contiguous mode, only read once.
@@ -113,7 +113,7 @@ END SUBROUTINE rdump
   ! This subroutine reads the header data at the top of the binary file
   SUBROUTINE read_sphng_header
 
-    use sphgravdata
+    use sphdata
     IMPLICIT NONE
   
     integer :: i !dummy variable
@@ -297,7 +297,7 @@ END SUBROUTINE rdump
     
   !Reads in a single block of data.
   SUBROUTINE read_sphng_block
-    use sphgravdata
+    use sphdata
 
   IMPLICIT NONE
   
@@ -521,7 +521,7 @@ END SUBROUTINE rdump
   
   SUBROUTINE allocate_arrays
 
-    use sphgravdata
+    use sphdata
 
   IMPLICIT NONE
   integer :: nalloc
@@ -543,7 +543,7 @@ END SUBROUTINE rdump
   END SUBROUTINE allocate_arrays
   
   SUBROUTINE deallocate_arrays
-    use sphgravdata
+    use sphdata
   IMPLICIT NONE
   print *, "DEALLOCATING HYDRO ARRAYS"
   deallocate( isteps, iphase, iunique )
@@ -565,7 +565,7 @@ END SUBROUTINE rdump
   END SUBROUTINE reallocate_arrays
   
   SUBROUTINE allocate_arrays_RT
-    use sphgravdata
+    use sphdata
   IMPLICIT NONE
   integer :: nalloc
   IF (contiguous .AND. nblocks > 1) THEN
@@ -583,7 +583,7 @@ END SUBROUTINE rdump
   END SUBROUTINE allocate_arrays_RT
   
   SUBROUTINE deallocate_arrays_RT
-    use sphgravdata
+    use sphdata
   IMPLICIT NONE
   print *, "Deallocating RT arrays"
   deallocate( radneigh )
@@ -603,7 +603,7 @@ END SUBROUTINE rdump
   
   !Deallocate all arrays held in this module, including nelementblocks.
   SUBROUTINE deallocate_all_arrays
-    use sphgravdata
+    use sphdata
   IMPLICIT NONE
   print *, "Deallocating all arrays:"
   IF (allocated(isteps)) CALL deallocate_arrays

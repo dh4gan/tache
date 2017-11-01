@@ -1,6 +1,6 @@
       subroutine wdump_grav(gravfile,potfile)
 
-      use sphgravdata
+      use sphdata
 
       implicit none
       integer :: i

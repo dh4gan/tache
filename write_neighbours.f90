@@ -1,8 +1,8 @@
 
 SUBROUTINE write_neighbours(neighbourfile)
 
-use sphgravdata
-use treedata
+use sphdata
+use sphneighbourdata
 implicit none
 
  integer :: i,j

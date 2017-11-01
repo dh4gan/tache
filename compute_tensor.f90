@@ -1,16 +1,20 @@
-subroutine compute_tensor
+subroutine compute_tensor(ifile)
 !
 ! Subroutine handles the computation of derivatives that form the tensor
 ! to be classified
 !
 
-real, dimension(3,3) :: tensor_element
-real, allocatable, dimension(:,:,:) :: tensor
+use tachedata
+implicit none
+
+integer :: ifile
+real :: percentcount
+real,dimension(3,3) :: tensor_element
 
 ! If this is an SPH file, require neighbour lists to compute derivatives
 if(filetype=='SPH') then
 
-   call get_SPH_neighbours
+   call get_SPH_neighbours(ifile)
 
    allocate(tensor(3,3,nelement))
 
@@ -24,7 +28,7 @@ if(filetype=='SPH') then
    ! Loop over particles
    do ielement = 1,nelement
 
-      call particle_percent_complete(ielement,nelement,percentcount,10.0)
+      call element_percent_complete(ielement,nelement,percentcount,10.0)
       
       tensor_element(:,:) =0.0
       call calc_velocityshear_tensor(ielement,tensor_element)

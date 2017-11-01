@@ -3,8 +3,8 @@ SUBROUTINE calc_grav_brute
   ! It uses brute force to calculate forces and potentials for particles outside
   ! the smoothing volume
 
-  use sphgravdata
-  use treedata
+  use sphdata
+  use sphneighbourdata
   use sphkerneldata
 
   implicit none

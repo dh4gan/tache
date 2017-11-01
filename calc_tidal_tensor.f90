@@ -2,8 +2,8 @@ SUBROUTINE calc_tidal_tensor(ielement, tidal)
 ! Subroutine calculates tidal tensor for particle ielement
 ! Tensor is scaled by its potential
 
-use sphgravdata
-use treedata
+use sphdata
+use sphneighbourdata
 use sphkerneldata
 
 real, dimension(3,3) :: tidal

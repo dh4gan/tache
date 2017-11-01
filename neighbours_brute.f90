@@ -2,8 +2,8 @@ subroutine neighbours_brute(sphfile)
   ! Subroutine finds nearest neighbours in radius 2h, using the octree
   ! h already defined for all particles
   ! This counts accreted particles and pointmasses too
-  use sphgravdata
-  use treedata
+  use sphdata
+  use sphneighbourdata
 
  integer :: i,j
 

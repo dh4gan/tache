@@ -1,8 +1,8 @@
 SUBROUTINE calc_grav
 ! Subroutine calculates gravitational forces and potentials for all particles
 
-use sphgravdata
-use treedata
+use sphdata
+use sphneighbourdata
 use sphkerneldata
 
 implicit none

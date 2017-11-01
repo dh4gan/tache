@@ -3,8 +3,8 @@ subroutine neighbours_grid(sphfile)
   ! h already defined for all particles
   ! This counts accreted particles and pointmasses too
 
-  use sphgravdata
-  use treedata
+  use sphdata
+  use sphneighbourdata
   IMPLICIT NONE
 
 interface
@@ -18,8 +18,7 @@ end interface
   character(18) :: neighbours
   logical :: existneigh
 
-  integer :: ielement,jpart, k, ientry
-  integer :: icell, jcell,n_test
+  integer :: ielement,jelement, k
 
   real :: hi,hj, hmean, range, sep,percent,counter
   real, parameter :: tiny = 1.0e-34
@@ -82,33 +81,33 @@ end interface
         !$OMP PARALLEL &
         !$OMP shared(nelementiclelist,particlelist,iphase,hi,ielement)&
         !$OMP shared(xyzmh,nneigh,neighb) &
-        !$OMP private(k,jpart,hj,hmean,sep)
+        !$OMP private(k,jelement,hj,hmean,sep)
         !$OMP DO SCHEDULE(runtime)
         do k = 1,nelementiclelist
-           jpart = particlelist(k)
-           !print*,ielement, k,nelementiclelist, jpart
-           IF(ielement==jpart) cycle
-           IF(iphase(jpart)/=0) cycle
+           jelement = particlelist(k)
+           !print*,ielement, k,nelementiclelist, jelement
+           IF(ielement==jelement) cycle
+           IF(iphase(jelement)/=0) cycle
            
-           hj = xyzmh(5,jpart)
+           hj = xyzmh(5,jelement)
            
-           if(ielement/=jpart) then
+           if(ielement/=jelement) then
 
              hmean = (hi + hj)/2.0
         
-              sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
-                  (xyzmh(2,ielement) - xyzmh(2,jpart))**2 + &
-                  (xyzmh(3,ielement) - xyzmh(3,jpart))**2 + tiny
+              sep = (xyzmh(1,ielement) - xyzmh(1,jelement))**2 + &
+                  (xyzmh(2,ielement) - xyzmh(2,jelement))**2 + &
+                  (xyzmh(3,ielement) - xyzmh(3,jelement))**2 + tiny
               sep = sqrt(sep)
               !print*, xyzmh(:,ielement)
-              !print*, xyzmh(:,jpart)
-              !print*,ielement,jpart, member(ielement), member(jpart), hi, hj, sep/hmean
+              !print*, xyzmh(:,jelement)
+              !print*,ielement,jelement, member(ielement), member(jelement), hi, hj, sep/hmean
         
               !	if particle j in neighbour sphere, then add to neighbour list
               if(sep<2.0*hmean.and.nneigh(ielement)<neighmax) then
                  !$OMP CRITICAL
                  nneigh(ielement) = nneigh(ielement) + 1
-                 neighb(ielement,nneigh(ielement)) = jpart
+                 neighb(ielement,nneigh(ielement)) = jelement
                  !$OMP END CRITICAL
               endif
            endif
@@ -168,13 +167,13 @@ SUBROUTINE find_particles_in_range(xpart,ypart,zpart,range)
 ! Subroutine finds all grid cells within a distance hpart from the co-ordinates
 ! xpart, ypart, zpart, and lists all particles in those cells
 
-  use sphgravdata, only:nelement
-  use treedata
+  use sphdata, only:nelement
+  use sphneighbourdata
 
   IMPLICIT NONE
 
   real, intent(in) :: xpart,ypart,zpart,range
-  integer :: icell, jcell, kcell, thiscell, partcell, istart,iend
+  integer :: icell, jcell, kcell, thiscell, istart,iend
   integer :: icellmin, icellmax, jcellmin, jcellmax, kcellmin, kcellmax
   integer :: nbinned, ielement, ientry
 

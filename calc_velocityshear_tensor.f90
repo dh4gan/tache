@@ -1,8 +1,8 @@
 SUBROUTINE calc_velocityshear_tensor(ielement, tensor)
 ! Subroutine calculates tidal tensor for particle ielement
 
-use sphgravdata
-use treedata
+use sphdata
+use sphneighbourdata
 use sphkerneldata
 
 real, dimension(3,3) :: tensor

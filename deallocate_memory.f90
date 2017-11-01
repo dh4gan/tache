@@ -1,8 +1,8 @@
 SUBROUTINE deallocate_memory
 ! Subroutine simply deallocates all memory used in loop
 
-use sphgravdata
-use treedata
+use sphdata
+use sphneighbourdata
 
 implicit none
 

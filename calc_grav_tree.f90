@@ -3,8 +3,8 @@ SUBROUTINE calc_grav_tree
     ! Subroutine calculates gravitational forces and potentials for all particles
     ! It uses pre-generated octree to approximate gravity at distances defined by Multipole Acceptance Criterion (MAC)
 
-    use sphgravdata
-    use treedata
+    use sphdata
+    use sphneighbourdata
     use sphkerneldata
 
     implicit none

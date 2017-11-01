@@ -6,7 +6,7 @@
 !
 ! DHF 08/10/2009
 !----------------------------------------------------------------------
-      use sphgravdata
+      use sphdata
         
       implicit none
       integer(kind=4) :: int1,int2,i1

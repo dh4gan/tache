@@ -1,7 +1,8 @@
 SUBROUTINE read_neighbours(neighbourfile)
 ! Subroutine reads in a neighbours file
-  use sphgravdata
-  use treedata
+  use sphdata
+  use sphneighbourdata
+	use tachedata,only: neigen
   implicit none
 
   integer :: i,j,neighcheck, tolcheck
@@ -25,12 +26,15 @@ SUBROUTINE read_neighbours(neighbourfile)
  meanneigh = sum(nneigh)/REAL(nelement)
  sdneigh = 0.0
 
+ neigen = 0
+
 !$OMP PARALLEL &
 !$OMP shared(nneigh,meanneigh,nelement)&
 !$OMP private(i) &
 !$OMP reduction(+:sdneigh)
 !$OMP DO SCHEDULE(runtime)
  do i=1,nelement
+	if(iphase(i)==0) neigen = neigen +1
      sdneigh = sdneigh+(nneigh(i)-meanneigh)**2
  enddo
  !$OMP END DO

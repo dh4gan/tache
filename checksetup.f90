@@ -3,6 +3,9 @@ subroutine checksetup
 ! TODO - Subroutine checks the inputs are correct
 !
 
+use tachedata
+implicit none
+
 logical :: existlist
 
 

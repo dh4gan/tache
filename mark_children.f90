@@ -4,7 +4,7 @@ SUBROUTINE mark_children(ipar,used)
 ! Subroutine begins by constructing a list of all descendants
 ! Then marks all nodes in the list
 
-use treedata
+use sphneighbourdata
 
 implicit none
 integer, dimension(n_node) :: used, mark

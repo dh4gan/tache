@@ -13,11 +13,17 @@ module sphneighbourdata
   ! Integers
   
   integer ::  inode,n_node
-  real :: hmin,xmax,ymax,zmax
-  real:: meanneigh, sdneigh, neighcrit
-  integer, parameter :: nodemax = 10
+
+  integer, parameter :: nodemax = 10 
   integer, parameter :: neighmax = 150
+
+  ! Reals
+
   real,parameter:: tolerance = 5.0 ! Search radius (in smoothing lengths) for neighbours using octree (minimum value is 2.0)
+
+  real :: hmin,xmax,ymax,zmax
+  real,dimension(3) :: rmax
+  real:: meanneigh, sdneigh, neighcrit
   
   
   !----------------------Arrays---------------------------------------
@@ -28,12 +34,14 @@ module sphneighbourdata
   real,allocatable, dimension(:) :: b,t_min, m_node
   real, allocatable, dimension(:,:) :: r_node, dr_node,com_node,bbr_min, bbr_max
   
- ! Data for regular grids only (occ, n_occ, xmax,ymax,zmax shared with octree)
-  
+  ! Data for regular grids only (occ, n_occ, xmax,ymax,zmax shared with octree)
+
+  ! Maximum number of grid cells (on a side) for regular grid
+  integer,parameter :: ngridmax=200
   integer :: ncells, ngridx,ngridy,ngridz, cellmax, nelementiclelist, ncellrange
   integer, allocatable,dimension(:) :: particlelist, cellist,isortcellpart
 
-  real :: dgrid
+  real :: dgrid, dgridmin
   
 
 contains

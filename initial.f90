@@ -3,28 +3,25 @@ subroutine initial
 ! and sets up simulation
 !
 
-character(8),parameter :: paramfile='tache.params'
+use tachedata
+implicit none
+
+
+integer :: ifile
+character(3) :: num
+
+
 
 
 ! Get input parameters and set up header:
   print*, " "
   print*, "-----------------------------------------------"
-  print*, " TACHE: Tensor clAssification of Hydrodynamic Elements"
+  print*, " TACHE: TensoriAl Classification of Hydrodynamic Elements"
   print*, "     dh4gan (current version: 1st Nov 2017)    "
   print*, "	                                       	  "
   print*, "-----------------------------------------------"
   print*, " "
-  print*, " If SPH read fails, check the following:"
-  print*, "    - File endianness"
-  print*, "    - Default real size"
-  print*, " "
-  print*, " For the gfortran compiler, inserting or "
-  print*, " removing the following flags should correct"
-  print*, " the problem:"
-  print*, "    -fconvert=swap"
-  print*, "       (swaps endianness during read-in)"
-  print*, "    -fdefault-real-8"
-  print*, "       (sets default real to double precision)"
+  
   print*, " "
   print*, " "
   print*, " input parameters in ./",trim(paramfile)
@@ -73,7 +70,7 @@ character(8),parameter :: paramfile='tache.params'
   allocate(vectorfile(nfiles))
 
   do ifile=1,nfiles
-     write(num, '(I4.3)')i
+     write(num, '(I4.3)')ifile
 
      write(gravfile(ifile),'("grav",A3)') num
      write(potfile(ifile), '("pot",A3)') num

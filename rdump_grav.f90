@@ -1,6 +1,6 @@
       subroutine rdump_grav(gravfile,potfile,rcheck)
 
-      use sphgravdata
+      use sphdata
 
       implicit none
       integer :: ios,unit,rcheck,i

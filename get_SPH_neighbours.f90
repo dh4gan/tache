@@ -1,14 +1,28 @@
-subroutine get_SPH_neighbours
+subroutine get_SPH_neighbours(ifile)
 !
 ! Subroutine either reads SPH neighbour data from file, or
 ! computes it via a regular grid
 !
 
+use tachedata
+use sphdata, only: poten,iphase,xyzmh,isort,iorig
+use sphneighbourdata
 
-! First, test to see if neighbour file exists: if it does, no need to
-! read or calculate octrees or calculate neighbours
+implicit none
 
-neighbourfile ="neighbours_"//TRIM(filename(n))
+integer,intent(in) :: ifile
+
+integer :: j
+real :: hmean
+character(100) :: neighbourfile
+logical :: existneigh
+
+!****************************************************************
+! 1. Test to see if neighbour file exists: if it does, no need to
+! calculate neighbours
+!*****************************************************************
+
+neighbourfile ="neighbours_"//TRIM(filename(ifile))
 
 inquire(file=neighbourfile,exist = existneigh)
 
@@ -18,24 +32,62 @@ if(existneigh.eqv..true.) then
    call read_neighbours(neighbourfile)
 
 else
-   ! If no neighbour file found, then we must generate the list
-   
+   !***************************************************************
+   ! 2. If no neighbour file found, then we must generate the list
+   !***************************************************************
+
    allocate(nneigh(nelement))
    allocate(neighb(nelement,neighmax))
    nneigh(:) = 0
    neighb(:,:) = 0
 
+    ! Find maximum and minimum values for all coordinates
+   rmax(:) = 0.0
+
+   allocate(isort(nelement))
+   allocate(iorig(nelement))
+
+   do ielement=1,nelement
+      ! rho(ielement) = xyzmh(4,ielement)/(xyzmh(5,ielement)**3) ! DEBUG LINE
+      isort(ielement) = ielement
+      iorig(ielement) = ielement
+     
+      if(iphase(ielement)==0) neigen = neigen +1
+     
+      do j=1,3
+         IF(abs(xyzmh(j,ielement))> rmax(j)) xmax = abs(xyzmh(1,ielement))
+      enddo
+
+      hmean = hmean + xyzmh(5,ielement)
+     
+   enddo
+
+   hmean = hmean/REAL(neigen)
+  
+   xmax = rmax(1)
+   ymax = rmax(2)
+   zmax = rmax(3)
+
+   print*,'-----------------------------------------'
+   print*, "Maximum values for spatial co-ordinates: "
+   print*, "x: ", xmax
+   print*, "y: ", ymax
+   print*, "z: ", zmax
+   
+   print*, 'Mean smoothing length: ',hmean
+  
+
    if(use_octree_grid=='o') THEN
 
       print*, "-----------------------------------------------"
       print*, 'Building octree'
-      CALL make_octree(filename(n))
+      CALL make_octree(filename(ifile))
       
       !	Use octree to find neighbours    
   
       print*, "-----------------------------------------------"
       print*, 'Creating Neighbour Lists, nelement: ',nelement		
-      CALL neighbours_octree(filename(n))
+      CALL neighbours_octree(filename(ifile))
       
       print*, 'Neighbour lists created'
       print*, "-----------------------------------------------"			
@@ -44,20 +96,20 @@ else
 
         print*, "-----------------------------------------------"
         print*, 'Building regular grid'
-        CALL make_grid(filename(n),hmean,dgridmin)
+        CALL make_grid_sphdata
 
         !	Use grid to find neighbours    
   
         print*, "-----------------------------------------------"
         print*, 'Creating Neighbour Lists from grid, nelement: ',nelement		
-        CALL neighbours_grid(filename(n))
+        CALL neighbours_grid(filename(ifile))
 
         print*, 'Neighbour lists created'
         print*, "-----------------------------------------------"
 
      ELSE
         print*, 'Finding neighbours by brute force'
-        CALL neighbours_brute(filename(n))
+        CALL neighbours_brute(filename(ifile))
      ENDIF
 
      ! Write the neighbour data to file
@@ -94,7 +146,7 @@ else
         !***********************************
 
         ! Write gravity data to file
-        call wdump_grav(gravfile(n),potfile(n))
+        call wdump_grav(ifile)
      endif
   endif
 

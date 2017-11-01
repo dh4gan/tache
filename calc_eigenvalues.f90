@@ -4,10 +4,14 @@ subroutine calc_eigenvalues
 !
 
 use tachedata
+use sphdata, only:iphase
+
 implicit none
 
 integer, parameter :: it_max = 10
 integer :: it_num,rot_num
+
+real :: percentcount
 
 real, dimension(3,3) :: tensor_element,eigenvec
 real, dimension(3) :: eigen
@@ -23,7 +27,7 @@ if(filetype=='SPH') then
 
    do ielement = 1,nelement
 
-      call particle_percent_complete(ielement,nelement,percentcount,10.0)
+      call element_percent_complete(ielement,nelement,percentcount,10.0)
       
       tensor_element(:,:) = tensor(:,:,ielement)
       eigen(:) = 0.0

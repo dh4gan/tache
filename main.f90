@@ -23,16 +23,15 @@ PROGRAM tache
      ! 1. Read in data file
      ! *********************
 
-     call read_dump(filename(ifile),skipdump)
+     call read_dump(ifile,skipdump)
 
      if(skipdump.eqv..true.) cycle
     
-
      !********************************************
      ! 2. Compute derivatives and construct tensor
      !********************************************
 
-     call compute_tensor
+     call compute_tensor(ifile)
 
      !*******************************************
      ! 3. Compute eigenvalues of the tensor
@@ -44,7 +43,7 @@ PROGRAM tache
      ! 4. Write data to files
      !******************************************
 
-     call write_eigendata
+     call write_eigendata(ifile)
 
      ! If we want to split dump into tensor classified components, do it here
      if(splitdump=='y') call write_splitdump

@@ -1,13 +1,27 @@
-subroutine write_eigendata
+subroutine write_eigendata(ifile)
 
-  integer,allocatable,dimension(:) :: eigenelement
+  !
+  ! Subroutine writes all eigendata to binary files
+  !
+
+  use tachedata
+  use sphdata, only: xyzmh,iunique,iphase
+
+  implicit none
+
+  integer, intent(in) :: ifile
+
+  integer :: i,j,k,counter
+
+  integer,allocatable, dimension(:) :: eigenelement
   real, allocatable, dimension (:,:,:) :: eigenvecbin
-  real, allocatable, dimension(:,:) :: eigenvalues, eigenbin
+  real, allocatable, dimension(:,:) :: eigenbin
   real, allocatable, dimension(:) :: xbin, ybin, zbin
   
 
   print*, '----------------------'
-  print*, 'Writing to file ', TRIM(eigenfile(n))
+  print*, 'Writing eigenvalues to file ', TRIM(eigenfile(ifile))
+  print*, 'Writing eigenvectors to file ', TRIM(vectorfile(ifile))
 
   ! Write data to file - for now, simple formatted file
   
@@ -15,12 +29,12 @@ subroutine write_eigendata
   
   ! Prepare special arrays for binary write
 
-  allocate(xbin(ngas))
-  allocate(ybin(ngas))
-  allocate(zbin(ngas))
-  allocate(eigenbin(3,ngas))
-  allocate(eigenvecbin(3,3,ngas))
-  allocate(eigenelement(ngas))
+  allocate(xbin(neigen))
+  allocate(ybin(neigen))
+  allocate(zbin(neigen))
+  allocate(eigenbin(3,neigen))
+  allocate(eigenvecbin(3,3,neigen))
+  allocate(eigenelement(neigen))
 
   counter =1
   do ielement=1,nelement
@@ -43,28 +57,27 @@ subroutine write_eigendata
      counter = counter +1
   enddo
   
-  open(27,file=eigenfile(n), status='unknown',form='unformatted')
-  write(27) ngas
-  write(27) (eigenelement(i),i=1,ngas)
-  write(27) (xbin(i), i=1,ngas)
-  write(27) (ybin(i), i=1,ngas)
-  write(27) (zbin(i), i=1,ngas)
-  write(27) (eigenbin(1,i), i=1,ngas)
-  write(27) (eigenbin(2,i), i=1,ngas)     
-  write(27) (eigenbin(3,i), i=1,ngas)
+  open(27,file=eigenfile(ifile), status='unknown',form='unformatted')
+  write(27) neigen
+  write(27) (eigenelement(i),i=1,neigen)
+  write(27) (xbin(i), i=1,neigen)
+  write(27) (ybin(i), i=1,neigen)
+  write(27) (zbin(i), i=1,neigen)
+  write(27) (eigenbin(1,i), i=1,neigen)
+  write(27) (eigenbin(2,i), i=1,neigen)     
+  write(27) (eigenbin(3,i), i=1,neigen)
   close(27)
   
   ! Now write the eigenvectors to file
-  open(27,file=vectorfile(n),status='unknown', form='unformatted')
-  write(27) ngas
-  write(27) (eigenelement(i),i=1,ngas)
-  write(27) (eigenvecbin(1,1:3,i),i=1,ngas)
-  write(27) (eigenvecbin(2,1:3,i),i=1,ngas)
-  write(27) (eigenvecbin(3,1:3,i),i=1,ngas)
+  open(27,file=vectorfile(ifile),status='unknown', form='unformatted')
+  write(27) neigen
+  write(27) (eigenelement(i),i=1,neigen)
+  write(27) (eigenvecbin(1,1:3,i),i=1,neigen)
+  write(27) (eigenvecbin(2,1:3,i),i=1,neigen)
+  write(27) (eigenvecbin(3,1:3,i),i=1,neigen)
 
 
   deallocate(xbin,ybin,zbin,eigenbin,eigenelement, eigenvecbin)
-
 
 
 end subroutine write_eigendata
