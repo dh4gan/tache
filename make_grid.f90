@@ -18,7 +18,7 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
 
   character(7) :: sphfile
 
-  integer :: ipart, ix,iy,iz, icell,jcell,kcell
+  integer :: ielement, ix,iy,iz, icell,jcell,kcell
   integer :: thiscell, counter, celltot, ngas
 
   real :: hmean,dgridmin
@@ -30,20 +30,20 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
   ymax = 0.0
   zmax = 0.0
 
-  allocate(isort(npart))
-  allocate(iorig(npart))
+  allocate(isort(nelement))
+  allocate(iorig(nelement))
 
   ngas = 0
-  do ipart=1,npart
-     ! rho(ipart) = xyzmh(4,ipart)/(xyzmh(5,ipart)**3) ! DEBUG LINE
-     isort(ipart) = ipart
-     iorig(ipart) = ipart
+  do ielement=1,nelement
+     ! rho(ielement) = xyzmh(4,ielement)/(xyzmh(5,ielement)**3) ! DEBUG LINE
+     isort(ielement) = ielement
+     iorig(ielement) = ielement
      
-     if(iphase(ipart)==0) ngas = ngas +1
+     if(iphase(ielement)==0) ngas = ngas +1
      
-     IF(abs(xyzmh(1,ipart))> xmax) xmax = abs(xyzmh(1,ipart))
-     IF(abs(xyzmh(2,ipart))> ymax) ymax = abs(xyzmh(2,ipart))
-     IF(abs(xyzmh(3,ipart))> zmax) zmax = abs(xyzmh(3,ipart))
+     IF(abs(xyzmh(1,ielement))> xmax) xmax = abs(xyzmh(1,ielement))
+     IF(abs(xyzmh(2,ielement))> ymax) ymax = abs(xyzmh(2,ielement))
+     IF(abs(xyzmh(3,ielement))> zmax) zmax = abs(xyzmh(3,ielement))
      
   enddo
   
@@ -101,18 +101,18 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
 
   ! Bin particles in grid
   !$OMP PARALLEL &
-  !$OMP shared(npart,iphase,xyzmh,cellID,n_occ,occ) &
-  !$OMP private(ipart,icell,jcell,kcell,thiscell)
+  !$OMP shared(nelement,iphase,xyzmh,cellID,n_occ,occ) &
+  !$OMP private(ielement,icell,jcell,kcell,thiscell)
   !$OMP DO SCHEDULE(runtime)
-  do ipart=1,npart
+  do ielement=1,nelement
      
-     if(iphase(ipart)/=0) cycle
+     if(iphase(ielement)/=0) cycle
 
-     icell = int((xyzmh(1,ipart)+xmax)/dgrid +1)
-     jcell = int((xyzmh(2,ipart)+ymax)/dgrid +1)
-     kcell = int((xyzmh(3,ipart)+zmax)/dgrid +1)
+     icell = int((xyzmh(1,ielement)+xmax)/dgrid +1)
+     jcell = int((xyzmh(2,ielement)+ymax)/dgrid +1)
+     kcell = int((xyzmh(3,ielement)+zmax)/dgrid +1)
 
-     if(icell*jcell*kcell==0) print*, xyzmh(1:3,ipart), icell, jcell, kcell
+     if(icell*jcell*kcell==0) print*, xyzmh(1:3,ielement), icell, jcell, kcell
      !thiscell = cellID(icell,jcell,kcell)
 
      call get_cellID(thiscell,icell,jcell,kcell,ngridx,ngridy,ngridz)
@@ -138,12 +138,12 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
 
   print*, 'Maximum cell occupancy: ',cellmax
 
-  if(celltot.ne.npart) then
-     print*, "WARNING: Binned total doesn't match particle total: ", celltot, npart
+  if(celltot.ne.nelement) then
+     print*, "WARNING: Binned total doesn't match particle total: ", celltot, nelement
   endif
 
   !allocate(occ(ncells,cellmax))
-  allocate(member(npart))
+  allocate(member(nelement))
 
   print*, 'Cell occupancy allocation complete'
   n_occ(:) = 0
@@ -151,30 +151,30 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
 
   ! Bin particles in grid
   !$OMP PARALLEL &
-  !$OMP shared(npart,iphase,xyzmh,cellID,n_occ,occ) &
-  !$OMP private(ipart,icell,jcell,kcell,thiscell)
+  !$OMP shared(nelement,iphase,xyzmh,cellID,n_occ,occ) &
+  !$OMP private(ielement,icell,jcell,kcell,thiscell)
   !$OMP DO SCHEDULE(runtime)
-  do ipart=1,npart
+  do ielement=1,nelement
      
-     if(iphase(ipart)/=0) cycle
+     if(iphase(ielement)/=0) cycle
 
      ngas = ngas +1
-     icell = int((xyzmh(1,ipart)+xmax)/dgrid +1)
-     jcell = int((xyzmh(2,ipart)+ymax)/dgrid +1)
-     kcell = int((xyzmh(3,ipart)+zmax)/dgrid +1)
+     icell = int((xyzmh(1,ielement)+xmax)/dgrid +1)
+     jcell = int((xyzmh(2,ielement)+ymax)/dgrid +1)
+     kcell = int((xyzmh(3,ielement)+zmax)/dgrid +1)
 
-     if(icell*jcell*kcell==0) print*, xyzmh(1:3,ipart), icell, jcell, kcell
+     if(icell*jcell*kcell==0) print*, xyzmh(1:3,ielement), icell, jcell, kcell
 !     thiscell = cellID(icell,jcell,kcell)
 
      call get_cellID(thiscell,icell,jcell,kcell,ngridx,ngridy,ngridz)
 
-     if(ipart==1) print*, 'particle ',ipart, ' in cell ', thiscell
+     if(ielement==1) print*, 'particle ',ielement, ' in cell ', thiscell
      !$OMP CRITICAL
      n_occ(thiscell) = n_occ(thiscell)+1
-!     occ(thiscell,n_occ(thiscell)) = ipart
-     member(ipart) = thiscell
+!     occ(thiscell,n_occ(thiscell)) = ielement
+     member(ielement) = thiscell
      !$OMP END CRITICAL
-     if(ipart==1) print*, 'membership: ', member(ipart)
+     if(ielement==1) print*, 'membership: ', member(ielement)
      
   enddo
   !$OMP END DO
@@ -185,14 +185,14 @@ SUBROUTINE make_grid(sphfile, hmean,dgridmin)
 
 
 print*, 'Sorting so that membership can be accessed in cell order'
-allocate(isortcellpart(npart))
+allocate(isortcellpart(nelement))
 
-do ipart=1,npart
-   isortcellpart(ipart) = ipart
-   if(iphase(ipart)/=0)   isortcellpart(ipart) = -10
+do ielement=1,nelement
+   isortcellpart(ielement) = ielement
+   if(iphase(ielement)/=0)   isortcellpart(ielement) = -10
 enddo
 
-call sort2(npart,member,isortcellpart,npart)
+call sort2(nelement,member,isortcellpart,nelement)
 
 print*, 'Sort complete'
 

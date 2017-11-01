@@ -18,7 +18,7 @@ end interface
   character(18) :: neighbours
   logical :: existneigh
 
-  integer :: ipart,jpart, k, ientry
+  integer :: ielement,jpart, k, ientry
   integer :: icell, jcell,n_test
 
   real :: hi,hj, hmean, range, sep,percent,counter
@@ -53,11 +53,11 @@ end interface
      percent = 0.0
      counter = 1.0
 
-     do ipart = 1,npart
+     do ielement = 1,nelement
 
-        if(iphase(ipart)/=0) cycle
+        if(iphase(ielement)/=0) cycle
          ! printing the extent to which the process is complete
-         percent = 100.0*REAL(ipart)/REAL(npart)
+         percent = 100.0*REAL(ielement)/REAL(nelement)
 
         if(percent>counter)then
             print*, counter,'% complete'
@@ -67,48 +67,48 @@ end interface
 
         ! Find all grid cells within tolerance*h of the particle
 
-        range = tolerance*xyzmh(5,ipart)        
-        hi = xyzmh(5,ipart)
+        range = tolerance*xyzmh(5,ielement)        
+        hi = xyzmh(5,ielement)
 
         ! Create list of all cells in range of the particle
         ! And a list of all particles in these cells
 
-        call find_particles_in_range(xyzmh(1,ipart),xyzmh(2,ipart),&
-             xyzmh(3,ipart), range)
+        call find_particles_in_range(xyzmh(1,ielement),xyzmh(2,ielement),&
+             xyzmh(3,ielement), range)
 
         ! Test for neighbourship all particles in the particle list
 
-        !print*, ipart, ncellrange, nparticlelist
+        !print*, ielement, ncellrange, nelementiclelist
         !$OMP PARALLEL &
-        !$OMP shared(nparticlelist,particlelist,iphase,hi,ipart)&
+        !$OMP shared(nelementiclelist,particlelist,iphase,hi,ielement)&
         !$OMP shared(xyzmh,nneigh,neighb) &
         !$OMP private(k,jpart,hj,hmean,sep)
         !$OMP DO SCHEDULE(runtime)
-        do k = 1,nparticlelist
+        do k = 1,nelementiclelist
            jpart = particlelist(k)
-           !print*,ipart, k,nparticlelist, jpart
-           IF(ipart==jpart) cycle
+           !print*,ielement, k,nelementiclelist, jpart
+           IF(ielement==jpart) cycle
            IF(iphase(jpart)/=0) cycle
            
            hj = xyzmh(5,jpart)
            
-           if(ipart/=jpart) then
+           if(ielement/=jpart) then
 
              hmean = (hi + hj)/2.0
         
-              sep = (xyzmh(1,ipart) - xyzmh(1,jpart))**2 + &
-                  (xyzmh(2,ipart) - xyzmh(2,jpart))**2 + &
-                  (xyzmh(3,ipart) - xyzmh(3,jpart))**2 + tiny
+              sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
+                  (xyzmh(2,ielement) - xyzmh(2,jpart))**2 + &
+                  (xyzmh(3,ielement) - xyzmh(3,jpart))**2 + tiny
               sep = sqrt(sep)
-              !print*, xyzmh(:,ipart)
+              !print*, xyzmh(:,ielement)
               !print*, xyzmh(:,jpart)
-              !print*,ipart,jpart, member(ipart), member(jpart), hi, hj, sep/hmean
+              !print*,ielement,jpart, member(ielement), member(jpart), hi, hj, sep/hmean
         
               !	if particle j in neighbour sphere, then add to neighbour list
-              if(sep<2.0*hmean.and.nneigh(ipart)<neighmax) then
+              if(sep<2.0*hmean.and.nneigh(ielement)<neighmax) then
                  !$OMP CRITICAL
-                 nneigh(ipart) = nneigh(ipart) + 1
-                 neighb(ipart,nneigh(ipart)) = jpart
+                 nneigh(ielement) = nneigh(ielement) + 1
+                 neighb(ielement,nneigh(ielement)) = jpart
                  !$OMP END CRITICAL
               endif
            endif
@@ -117,11 +117,11 @@ end interface
         !$OMP END DO
         !$OMP END PARALLEL
         ! End loop over particles in cell
-        if(nneigh(ipart) < 20) then
-           print*, 'nneigh for particle ',ipart,' is ',nneigh(ipart), neighmax
-           print*, 'Particle type: ', iphase(ipart)
-           print*, 'Number of cells/particles tested ', ncellrange, nparticlelist
-           !print*, 'xyzmh: ', xyzmh(:,ipart)
+        if(nneigh(ielement) < 20) then
+           print*, 'nneigh for particle ',ielement,' is ',nneigh(ielement), neighmax
+           print*, 'Particle type: ', iphase(ielement)
+           print*, 'Number of cells/particles tested ', ncellrange, nelementiclelist
+           !print*, 'xyzmh: ', xyzmh(:,ielement)
         endif
         
         
@@ -137,21 +137,21 @@ end interface
   endif
   
   ! Calculate mean and standard deviation of neighbour counts
-  meanneigh = sum(nneigh)/REAL(npart)
+  meanneigh = sum(nneigh)/REAL(nelement)
   sdneigh = 0.0
   
   !$OMP PARALLEL &
-  !$OMP shared(nneigh,meanneigh,npart)&
-  !$OMP private(ipart) &
+  !$OMP shared(nneigh,meanneigh,nelement)&
+  !$OMP private(ielement) &
   !$OMP reduction(+:sdneigh)
   !$OMP DO SCHEDULE(runtime)
-  do ipart=1,npart
-     sdneigh = sdneigh+(nneigh(ipart)-meanneigh)**2
+  do ielement=1,nelement
+     sdneigh = sdneigh+(nneigh(ielement)-meanneigh)**2
   enddo
   !$OMP END DO
   !$OMP END PARALLEL
   
-  sdneigh = sqrt(sdneigh/REAL(npart))
+  sdneigh = sqrt(sdneigh/REAL(nelement))
   
   print*, 'Mean neighbour number is ', meanneigh
   print*, 'Standard Deviation: ', sdneigh
@@ -168,7 +168,7 @@ SUBROUTINE find_particles_in_range(xpart,ypart,zpart,range)
 ! Subroutine finds all grid cells within a distance hpart from the co-ordinates
 ! xpart, ypart, zpart, and lists all particles in those cells
 
-  use sphgravdata, only:npart
+  use sphgravdata, only:nelement
   use treedata
 
   IMPLICIT NONE
@@ -176,7 +176,7 @@ SUBROUTINE find_particles_in_range(xpart,ypart,zpart,range)
   real, intent(in) :: xpart,ypart,zpart,range
   integer :: icell, jcell, kcell, thiscell, partcell, istart,iend
   integer :: icellmin, icellmax, jcellmin, jcellmax, kcellmin, kcellmax
-  integer :: nbinned, ipart, ientry
+  integer :: nbinned, ielement, ientry
 
 ! Find cell indices containing x-range, x+range
 
@@ -229,7 +229,7 @@ SUBROUTINE find_particles_in_range(xpart,ypart,zpart,range)
   allocate(particlelist(nbinned))
 
 particlelist(:) = 0
-nparticlelist = 0
+nelementiclelist = 0
 
 ! Now find list of particles from each cell
 
@@ -257,22 +257,22 @@ do icell=1,ncellrange
    ! End is simply the number of particles in the cell
    iend = istart + n_occ(thiscell)-1
       
-   if (iend> npart) iend = npart
+   if (iend> nelement) iend = nelement
    ! Now go through this section of the list and add particles
-   do ipart=istart,iend
-      nparticlelist = nparticlelist+1
-      particlelist(nparticlelist) = isortcellpart(ipart)      
+   do ielement=istart,iend
+      nelementiclelist = nelementiclelist+1
+      particlelist(nelementiclelist) = isortcellpart(ielement)      
    enddo
 
 enddo
 
 
-if(nparticlelist/=nbinned) then
+if(nelementiclelist/=nbinned) then
    print*, "WARNING! particlelist total doesn't match expected occupancy:",&
-        nparticlelist,nbinned
+        nelementiclelist,nbinned
 endif
 
-!print*, 'Found ', nparticlelist, ' particles in range from ',ncellrange, ' cells'
+!print*, 'Found ', nelementiclelist, ' particles in range from ',ncellrange, ' cells'
 
 return
 

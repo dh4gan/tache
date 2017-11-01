@@ -9,19 +9,19 @@ SUBROUTINE calc_grav_from_pot
 
   real,dimension(3) :: dr
 
-  integer :: ipart, jpart,k,ix
+  integer :: ielement, jpart,k,ix
   real :: v, meanpot,sdpot, percent,counter
   real :: rhoj,grpm
 
-  allocate(gravxyz(3,npart))
+  allocate(gravxyz(3,nelement))
   gravxyz(:,:) = 0.0
   isoft = 0
 
   percent = 0.0
   counter = 1.0
-  do ipart = 1,npart
+  do ielement = 1,nelement
     
-     percent = REAL(ipart)/REAL(npart)*100.0
+     percent = REAL(ielement)/REAL(nelement)*100.0
 
      if(percent>counter)then
         print*, counter,'% complete'
@@ -29,16 +29,16 @@ SUBROUTINE calc_grav_from_pot
      endif   
 
      !$OMP PARALLEL &
-     !$OMP shared(ipart, npart,poten,gravxyz) &
+     !$OMP shared(ielement, nelement,poten,gravxyz) &
      !$OMP private(jpart,ix) 
      !$OMP DO SCHEDULE(runtime)
 
-     do k = 1, nneigh(ipart)
+     do k = 1, nneigh(ielement)
 
-        jpart = neighb(ipart,k)
+        jpart = neighb(ielement,k)
         
         ! Calculate gradient of SPH kernel
-        hmean = 0.5*(xyzmh(5,ipart) + xyzmh(5,jpart))
+        hmean = 0.5*(xyzmh(5,ielement) + xyzmh(5,jpart))
         hmean21 = 1./(hmean*hmean)
         hmean41 = hmean21*hmean21
         pmassj = xyzmh(4,jpart)
@@ -46,7 +46,7 @@ SUBROUTINE calc_grav_from_pot
 
         ! Separation of particles
         do ix = 1,3
-            dr(ix) = xyzmh(ix,ipart) - xyzmh(ix,jpart)
+            dr(ix) = xyzmh(ix,ielement) - xyzmh(ix,jpart)
         enddo
 
         rij2 = dr(1)*dr(1) + dr(2)*dr(2) + dr(3)*dr(3)
@@ -67,7 +67,7 @@ SUBROUTINE calc_grav_from_pot
         endif
 
         IF(index1 < 1 .or. index<1) THEN
-           print*, jpart,ipart, index, itable, rij2, v2,dvtable, v2/dvtable, index1
+           print*, jpart,ielement, index, itable, rij2, v2,dvtable, v2/dvtable, index1
         endif
         IF (v > radkernel) cycle
      
@@ -77,7 +77,7 @@ SUBROUTINE calc_grav_from_pot
 
         ! Use gradient of kernel to calculate F_i = - grad_i phi (x,y,z)
         do ix = 1,3            
-                gravxyz(ix,ipart) = gravxyz(ix,ipart) - grpm*dr(ix)*poten(jpart)/rhoj          
+                gravxyz(ix,ielement) = gravxyz(ix,ielement) - grpm*dr(ix)*poten(jpart)/rhoj          
         enddo
 
      enddo
@@ -91,38 +91,38 @@ SUBROUTINE calc_grav_from_pot
         jpart = listpm(k)
 
         print*, listpm
-        if(jpart==ipart) cycle
+        if(jpart==ielement) cycle
 
-        sep = (xyzmh(1,ipart) - xyzmh(1,jpart))**2 + &
-             (xyzmh(2,ipart) - xyzmh(2,jpart))**2 +&
-             (xyzmh(3,ipart) - xyzmh(3,jpart))**2
+        sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
+             (xyzmh(2,ielement) - xyzmh(2,jpart))**2 +&
+             (xyzmh(3,ielement) - xyzmh(3,jpart))**2
 
         sep =sqrt(sep)
 
-        poten(ipart) = poten(ipart) + xyzmh(4,jpart)/sep
+        poten(ielement) = poten(ielement) + xyzmh(4,jpart)/sep
 
      enddo
-     !print*, 'Particle ', ipart, ': Potential - ', poten(ipart), 'Force: ',gravi(:)
+     !print*, 'Particle ', ielement, ': Potential - ', poten(ielement), 'Force: ',gravi(:)
   ENDDO
   ! End loop over all particles
 
   ! Calculate mean and standard deviation of potential
 
-  meanpot = sum(poten)/REAL(npart)
+  meanpot = sum(poten)/REAL(nelement)
   sdpot = 0.0
 
   !$OMP PARALLEL &
-  !$OMP shared(nneigh,meanneigh,npart)&
-  !$OMP private(ipart) &
+  !$OMP shared(nneigh,meanneigh,nelement)&
+  !$OMP private(ielement) &
   !$OMP reduction(+:sdneigh)
   !$OMP DO SCHEDULE(runtime)
-  do ipart=1,npart
-     sdpot = sdpot+(poten(ipart)-meanpot)**2
+  do ielement=1,nelement
+     sdpot = sdpot+(poten(ielement)-meanpot)**2
   enddo
   !$OMP END DO
   !$OMP END PARALLEL
 
-  sdpot = sqrt(sdpot/REAL(npart))
+  sdpot = sqrt(sdpot/REAL(nelement))
 
   print*, 'Mean potential is ', meanpot
   print*, 'Standard Deviation: ', sdpot

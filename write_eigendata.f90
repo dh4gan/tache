@@ -1,6 +1,6 @@
 subroutine write_eigendata
 
-  integer,allocatable,dimension(:) :: eigenpart
+  integer,allocatable,dimension(:) :: eigenelement
   real, allocatable, dimension (:,:,:) :: eigenvecbin
   real, allocatable, dimension(:,:) :: eigenvalues, eigenbin
   real, allocatable, dimension(:) :: xbin, ybin, zbin
@@ -20,23 +20,23 @@ subroutine write_eigendata
   allocate(zbin(ngas))
   allocate(eigenbin(3,ngas))
   allocate(eigenvecbin(3,3,ngas))
-  allocate(eigenpart(ngas))
+  allocate(eigenelement(ngas))
 
   counter =1
-  do ipart=1,npart
-     if(iphase(ipart)/=0) cycle
+  do ielement=1,nelement
+     if(iphase(ielement)/=0) cycle
      if(allocated(iunique)) then
-        eigenpart(counter) = iunique(ipart)
+        eigenelement(counter) = iunique(ielement)
      else
-        eigenpart(counter) = ipart
+        eigenelement(counter) = ielement
      endif
-     xbin(counter) = xyzmh(1,ipart)
-     ybin(counter) = xyzmh(2,ipart)
-     zbin(counter) = xyzmh(3,ipart)
+     xbin(counter) = xyzmh(1,ielement)
+     ybin(counter) = xyzmh(2,ielement)
+     zbin(counter) = xyzmh(3,ielement)
      do k=1,3
-        eigenbin(k,counter) = eigenvalues(k,ipart)
+        eigenbin(k,counter) = eigenvalues(k,ielement)
         do j=1,3
-           eigenvecbin(j,k,counter) = eigenvectors(j,k,ipart)
+           eigenvecbin(j,k,counter) = eigenvectors(j,k,ielement)
         enddo
      enddo
      
@@ -45,7 +45,7 @@ subroutine write_eigendata
   
   open(27,file=eigenfile(n), status='unknown',form='unformatted')
   write(27) ngas
-  write(27) (eigenpart(i),i=1,ngas)
+  write(27) (eigenelement(i),i=1,ngas)
   write(27) (xbin(i), i=1,ngas)
   write(27) (ybin(i), i=1,ngas)
   write(27) (zbin(i), i=1,ngas)
@@ -57,13 +57,13 @@ subroutine write_eigendata
   ! Now write the eigenvectors to file
   open(27,file=vectorfile(n),status='unknown', form='unformatted')
   write(27) ngas
-  write(27) (eigenpart(i),i=1,ngas)
+  write(27) (eigenelement(i),i=1,ngas)
   write(27) (eigenvecbin(1,1:3,i),i=1,ngas)
   write(27) (eigenvecbin(2,1:3,i),i=1,ngas)
   write(27) (eigenvecbin(3,1:3,i),i=1,ngas)
 
 
-  deallocate(xbin,ybin,zbin,eigenbin,eigenpart, eigenvecbin)
+  deallocate(xbin,ybin,zbin,eigenbin,eigenelement, eigenvecbin)
 
 
 

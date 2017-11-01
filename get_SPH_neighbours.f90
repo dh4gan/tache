@@ -20,8 +20,8 @@ if(existneigh.eqv..true.) then
 else
    ! If no neighbour file found, then we must generate the list
    
-   allocate(nneigh(npart))
-   allocate(neighb(npart,neighmax))
+   allocate(nneigh(nelement))
+   allocate(neighb(nelement,neighmax))
    nneigh(:) = 0
    neighb(:,:) = 0
 
@@ -34,7 +34,7 @@ else
       !	Use octree to find neighbours    
   
       print*, "-----------------------------------------------"
-      print*, 'Creating Neighbour Lists, npart: ',npart		
+      print*, 'Creating Neighbour Lists, nelement: ',nelement		
       CALL neighbours_octree(filename(n))
       
       print*, 'Neighbour lists created'
@@ -49,7 +49,7 @@ else
         !	Use grid to find neighbours    
   
         print*, "-----------------------------------------------"
-        print*, 'Creating Neighbour Lists from grid, npart: ',npart		
+        print*, 'Creating Neighbour Lists from grid, nelement: ',nelement		
         CALL neighbours_grid(filename(n))
 
         print*, 'Neighbour lists created'

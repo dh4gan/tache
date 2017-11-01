@@ -66,17 +66,17 @@
       read (10) number
 
       if(number==6) then
-         read(10) npart,n1,n2,nreassign,naccrete,nkill
+         read(10) nelement,n1,n2,nreassign,naccrete,nkill
          nblocks = 1
       else if(number>=7) then
-         read(10) npart,n1,n2,nreassign,naccrete,nkill,nblocks
+         read(10) nelement,n1,n2,nreassign,naccrete,nkill,nblocks
       else
          print*, 'Error in rdump: No. of default integers wrong: ',number
          rcheck = 1
          return
       endif
 
-      print*, 'npart, nblocks: ', npart, nblocks
+      print*, 'nelement, nblocks: ', nelement, nblocks
 ! Read in integers of size int*1, int*2, int*4, int*8
       do i = 1, 6
          read (10) number
@@ -117,13 +117,13 @@
  nptcnt = 0 
 
 print*, 'Allocating Arrays'
-allocate(xyzmh(5,npart))
-allocate(vxyzu(4,npart))
-allocate(iphase(npart))
-allocate(isteps(npart))
-allocate(rho(npart))
-allocate(dgrav(npart))
-allocate(listinactive(npart))
+allocate(xyzmh(5,nelement))
+allocate(vxyzu(4,nelement))
+allocate(iphase(nelement))
+allocate(isteps(nelement))
+allocate(rho(nelement))
+allocate(dgrav(nelement))
+allocate(listinactive(nelement))
 
 allocate(listpm(nptmax))
 allocate(spinx(nptmax))
@@ -141,10 +141,10 @@ print*, 'Arrays Allocated'
  DO jj = 1, nblocks
 
     READ (10, END=20) number8, (nums(i), i=1,8)
-    print *, npart, nblocks,jj,number8,number8*nblocks
-    npart = number8
+    print *, nelement, nblocks,jj,number8,number8*nblocks
+    nelement = number8
 
-    print *,'Reading block ',jj,npart, icount
+    print *,'Reading block ',jj,nelement, icount
     print *,'nums ',(nums(i), i=1,8)
 
     READ (10, END=20) number8, (numssink(i), i=1,8)
@@ -160,7 +160,7 @@ print*, 'Arrays Allocated'
     ic2 = icount+2
     ic3 = icount+3
     READ (10, END=20) (isteps(i), i=icount+1, & 
-         icount+npart)
+         icount+nelement)
      print *,'isteps: ',isteps(ic1),isteps(ic2),isteps(ic3)
      print*, nums(1)
      IF (nums(1).GE.2) THEN
@@ -170,7 +170,7 @@ print*, 'Arrays Allocated'
         print *, 'inactive: ', nlistinactive,listinactive(ic1)
      END IF
      READ (10, END=20) (iphase(i), i=icount+1, &
-          icount+npart)
+          icount+nelement)
 
 
      !
@@ -178,23 +178,23 @@ print*, 'Arrays Allocated'
      !
 
      READ (10, END=20) numberdummy
-     READ (10, END=20) (xyzmh(1,i), i=icount+1, icount+npart)
-     READ (10, END=20) (xyzmh(2,i), i=icount+1, icount+npart)
-     READ (10, END=20) (xyzmh(3,i), i=icount+1, icount+npart)
-     READ (10, END=20) (xyzmh(4,i), i=icount+1, icount+npart)
-     READ (10, END=20) (xyzmh(5,i), i=icount+1, icount+npart)
+     READ (10, END=20) (xyzmh(1,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (xyzmh(2,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (xyzmh(3,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (xyzmh(4,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (xyzmh(5,i), i=icount+1, icount+nelement)
 
      print *,'reading velocities and u'
 
-     READ (10, END=20) (vxyzu(1,i), i=icount+1, icount+npart)
-     READ (10, END=20) (vxyzu(2,i), i=icount+1, icount+npart)
-     READ (10, END=20) (vxyzu(3,i), i=icount+1, icount+npart)
-     READ (10, END=20) (vxyzu(4,i), i=icount+1, icount+npart)
+     READ (10, END=20) (vxyzu(1,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (vxyzu(2,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (vxyzu(3,i), i=icount+1, icount+nelement)
+     READ (10, END=20) (vxyzu(4,i), i=icount+1, icount+nelement)
 
      print *,'reading density'
 
      READ (10, END=20) (rho(i), i=icount+1, &
-          icount+npart)
+          icount+nelement)
 
      write (*,*) 'nums(7) is ',nums(7)
 
@@ -202,7 +202,7 @@ print*, 'Arrays Allocated'
         READ (10, END=20) 
      END DO
      READ (10, END=20) (dgrav(i), i=icount+1, &
-                 icount+npart)
+                 icount+nelement)
 
      print*, 'Reading Sink Data'
 
@@ -237,65 +237,65 @@ print*, 'Arrays Allocated'
      IF (number.EQ.3) THEN
        print *,'Reading RT ',number,(numsRT(i),i=1,8)
 !!$        IF (numsRT(3).EQ.1) THEN
-!!$           READ (11, END=20) (nneigh(i), i=1, npart)
+!!$           READ (11, END=20) (nneigh(i), i=1, nelement)
 !!$        ENDIF
-!!$        READ (11, END=20) (e(i), i=1, npart)
-!!$        READ (11, END=20) (rkappa(i), i=1, npart)
-!!$        READ (11, END=20) (cv(i), i=1, npart)
-!!$        READ (11, END=20) (rlambda(i), i=1, npart)
-!!$        READ (11, END=20) (edd(i), i=1, npart)
+!!$        READ (11, END=20) (e(i), i=1, nelement)
+!!$        READ (11, END=20) (rkappa(i), i=1, nelement)
+!!$        READ (11, END=20) (cv(i), i=1, nelement)
+!!$        READ (11, END=20) (rlambda(i), i=1, nelement)
+!!$        READ (11, END=20) (edd(i), i=1, nelement)
 !!$        IF (numsRT(6).EQ.8) THEN
 !!$           DO ii=1,3
-!!$              READ (11, END=20) (force(ii,i), i=1, npart)
+!!$              READ (11, END=20) (force(ii,i), i=1, nelement)
 !!$           END DO
 !!$        ENDIF
 !!$        IF (numsRT(7).EQ.1) THEN
-!!$           READ (11, END=20) (dlnTdlnP(i), i=1, npart)
+!!$           READ (11, END=20) (dlnTdlnP(i), i=1, nelement)
 !!$        ENDIF
 !!$        IF (numsRT(7).EQ.13 .OR. numsRT(7).EQ.14) THEN
-!!$           READ (11, END=20) (dlnTdlnP(i), i=1, npart)
+!!$           READ (11, END=20) (dlnTdlnP(i), i=1, nelement)
 !!$           IF (numsRT(7).EQ.11) THEN
 !!$              READ (11, END=20) (adiabaticgradient(i), &
-!!$                          i=1, npart)
+!!$                          i=1, nelement)
 !!$           ENDIF
 !!$           DO ii=1,3
 !!$              READ (11, END=20) (pressure(ii,i),  &
-!!$                          i=1, npart)
+!!$                          i=1, nelement)
 !!$           END DO
 !!$           DO ii=1,3
 !!$              READ (11, END=20) (viscosity(ii,i), &
-!!$                          i=1, npart)
+!!$                          i=1, nelement)
 !!$           END DO
 !!$           DO ii=1,3
 !!$              READ (11, END=20) (gravity(ii,i), 
-!!$              &                          i=1, npart)
+!!$              &                          i=1, nelement)
 !!$           END DO
 !!$           DO ii=1,3
 !!$              READ (11, END=20) (radpres(ii,i), 
-!!$              &                          i=1, npart)
+!!$              &                          i=1, nelement)
 !!$           END DO
 !!$        ENDIF
      ENDIF
      
-     icount = icount + npart
+     icount = icount + nelement
      nptcnt = nptcnt + nptmass
      !
      !--End block loop
      !
   END DO
-  npart = icount
+  nelement = icount
   nptmass = nptcnt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 close(10)
 
-print*, 'npart, nptmass ', npart, nptmass
+print*, 'nelement, nptmass ', nelement, nptmass
 			 
 
       print*, '      - SPH dump file correctly read in'
-      print*, '      -',npart,'particles in total'
-      print*, '      -',npart-naccrete-1,'gas particles active'
+      print*, '      -',nelement,'particles in total'
+      print*, '      -',nelement-naccrete-1,'gas particles active'
       print*, ' '
 
 20    CONTINUE

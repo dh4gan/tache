@@ -69,7 +69,7 @@ skip =0
       call read_sphng_header
       call read_sphng_data
 
-      if(nblocks>1) npart = nparttot
+      if(nblocks>1) nelement = nelementtot
       close(10)
 
 return 
@@ -144,13 +144,13 @@ END SUBROUTINE rdump
     read(10) number
     IF (tagged) read(10) !skip tags here
     IF (number == 6) THEN
-       read(10) nparttot,n1,n2,nreassign,naccrete,nkill
+       read(10) nelementtot,n1,n2,nreassign,naccrete,nkill
        nblocks = 1
     ELSE
-       read(10) nparttot,n1,n2,nreassign,naccrete,nkill,nblocks
+       read(10) nelementtot,n1,n2,nreassign,naccrete,nkill,nblocks
     END IF
-    write (*,*) 'nparttot = ',nparttot,' nblocks ',nblocks
-    allocate( npartblocks(nblocks) )
+    write (*,*) 'nelementtot = ',nelementtot,' nblocks ',nblocks
+    allocate( nelementblocks(nblocks) )
     
     DO i = 1, 3
        read(10) 
@@ -160,7 +160,7 @@ END SUBROUTINE rdump
        IF (tagged) read(10)
        read(10) iuniquemax
     ELSE
-       iuniquemax = nparttot
+       iuniquemax = nelementtot
     END IF
     print *, "iuniquemax =", iuniquemax
     
@@ -313,11 +313,11 @@ END SUBROUTINE rdump
   print *, "Reading block ", iblock
   
   read(10) number8, nums(1:8)
-  print *, nparttot, nblocks, iblock, number8, number8*nblocks
-  npart = number8
-  npartblocks(iblock) = npart
+  print *, nelementtot, nblocks, iblock, number8, number8*nblocks
+  nelement = number8
+  nelementblocks(iblock) = nelement
   
-  print *, "Block contains ", npart, "particles, current icount ", icount
+  print *, "Block contains ", nelement, "particles, current icount ", icount
   print *, "nums ", nums(1:8)
   
   read(10) number8, numssink(1:8)
@@ -341,7 +341,7 @@ END SUBROUTINE rdump
   END IF
   
   IF (tagged) read(10) !skip tag
-  read(10) isteps(icount+1:icount+npart)
+  read(10) isteps(icount+1:icount+nelement)
   print *, "isteps: ", isteps(ic1:ic3)
   IF (nums(1) >= 2) THEN
     IF (tagged) read(10) !skip tag
@@ -353,17 +353,17 @@ END SUBROUTINE rdump
       print*," WARNING: iphase does not match tag "//trim(tagi)
     END IF
   END IF
-  read(10) iphase(icount+1:icount+npart)
+  read(10) iphase(icount+1:icount+nelement)
   print *, "iphase: ", iphase(ic1:ic3)
   
   !In rdump, only if nums1(5) >= 5
   IF (tagged) read(10)
-  read(10) iunique(icount+1:icount+npart)
+  read(10) iunique(icount+1:icount+nelement)
   
   print *, "Reading xyzmh..."
   DO i = 1, 5
     IF (tagged) read(10) tagi !skip tag
-    read(10) xyzmh(i,icount+1:icount+npart)
+    read(10) xyzmh(i,icount+1:icount+nelement)
   END DO
   print *, "x: ", xyzmh(1,ic1:ic3)
   print *, "h: ", xyzmh(5,ic1:ic3)
@@ -371,15 +371,15 @@ END SUBROUTINE rdump
   print *, "Reading vxyzu..."
   DO i = 1, 4
     IF (tagged) read(10) tagi !skip tag
-    read(10) vxyzu(i,icount+1:icount+npart)
+    read(10) vxyzu(i,icount+1:icount+nelement)
   END DO
   print *, "vx: ", vxyzu(1,ic1:ic3)
   print *, "u: ", vxyzu(4,ic1:ic3)
   
   print *, "Reading rho..."
   IF (tagged) read(10) tagi !skip tag
-  read(10) alphaMM(icount+1:icount+npart)
-  rho(icount+1:icount+npart) = alphaMM(icount+1:icount+npart)
+  read(10) alphaMM(icount+1:icount+nelement)
+  rho(icount+1:icount+nelement) = alphaMM(icount+1:icount+nelement)
   print *, "rho: ", rho(ic1:ic3)
   
   print *, "nums(7) is ", nums(7)
@@ -388,21 +388,21 @@ END SUBROUTINE rdump
       print *, "Reading gradh..."
       IF (tagged) read(10) tagi !skip tag
       print *, "tag is ", trim(tagi)  
-      read(10) gradh(icount+1:icount+npart)
+      read(10) gradh(icount+1:icount+nelement)
       print *, "gradh: ", gradh(ic1:ic3)
     END IF
     IF (nums(7) >= 3) THEN
       print *, "Reading gradhsoft..."
       IF (tagged) read(10) tagi !skip tag
       print *, "tag is ", trim(tagi)  
-      read(10) gradhsoft(icount+1:icount+npart)
+      read(10) gradhsoft(icount+1:icount+nelement)
       print *, "gradhsoft: ", poten(ic1:ic3)
     END IF
   ELSE
     print *, "Reading dgrav..."
     IF (tagged) read(10) tagi !skip tag
     !print *, "tag is ", trim(tagi)
-    read(10) dgrav(icount+1:icount+npart)
+    read(10) dgrav(icount+1:icount+nelement)
     print *, "dgrav: ", dgrav(ic1:ic3)  
   END IF 
   
@@ -415,14 +415,14 @@ END SUBROUTINE rdump
  
   print *, "Reading alphaMM..."
   IF (tagged) read(10) tagi !skip tag
-  read(10) alphaMM(icount+1:icount+npart)
+  read(10) alphaMM(icount+1:icount+nelement)
   print *, "alphaMM: ", alphaMM(ic1:ic3)
 
   ! Read the potential if it is here
   if(nums(7).ge.5) then
      print*, 'reading potential'
      if(tagged) read(10) tagi
-     read(10) poten(icount+1:icount+npart)
+     read(10) poten(icount+1:icount+nelement)
      print*, 'poten: ', poten(ic1:ic3)
   endif
   
@@ -462,7 +462,7 @@ END SUBROUTINE rdump
   END DO
   
   !Read RT data if it's there
-  !NB Original indices were from 1 to npart; I'm guessing they should be changed.
+  !NB Original indices were from 1 to nelement; I'm guessing they should be changed.
   !Also NB - is this old? Some parts don't work logically...
 !!$  IF (numberarray == 3) THEN
 !!$    print *, "Reading RT", numberarray, numsRT(1:8)
@@ -473,38 +473,38 @@ END SUBROUTINE rdump
 !!$      CALL reallocate_arrays_RT
 !!$      print*, 'RT arrays reallocated'
 !!$    END IF
-!!$    IF (numsRT(3) == 1) read(10) radneigh(icount+1:icount+npart)
-!!$    read(10) e(icount+1:icount+npart)
-!!$    read(10) rkappa(icount+1:icount+npart)
-!!$    read(10) cv(icount+1:icount+npart)
-!!$    read(10) rlambda(icount+1:icount+npart)
-!!$    read(10) edd(icount+1:icount+npart)
+!!$    IF (numsRT(3) == 1) read(10) radneigh(icount+1:icount+nelement)
+!!$    read(10) e(icount+1:icount+nelement)
+!!$    read(10) rkappa(icount+1:icount+nelement)
+!!$    read(10) cv(icount+1:icount+nelement)
+!!$    read(10) rlambda(icount+1:icount+nelement)
+!!$    read(10) edd(icount+1:icount+nelement)
 !!$    IF (numsRT(6) == 8) THEN
 !!$      DO i = 1, 3
-!!$        read(10) force(i,icount+1:icount+npart)
+!!$        read(10) force(i,icount+1:icount+nelement)
 !!$      END DO
 !!$    END IF
-!!$    IF (numsRT(7) == 1) read(10) dlnTdlnP(icount+1:icount+npart)
+!!$    IF (numsRT(7) == 1) read(10) dlnTdlnP(icount+1:icount+nelement)
 !!$    IF (numsRT(7) == 13 .OR. numsRT(7) == 14) THEN
-!!$      read(10) dlnTdlnP(icount+1:icount+npart)
-!!$      IF (numsRT(7) == 11) read(10) adiabaticgradient(icount+1:icount+npart)
+!!$      read(10) dlnTdlnP(icount+1:icount+nelement)
+!!$      IF (numsRT(7) == 11) read(10) adiabaticgradient(icount+1:icount+nelement)
 !!$      DO i = 1, 3
-!!$        read(10) pressure(i,icount+1:icount+npart)
+!!$        read(10) pressure(i,icount+1:icount+nelement)
 !!$      END DO
 !!$      DO i = 1, 3
-!!$        read(10) viscosity(i,icount+1:icount+npart)
+!!$        read(10) viscosity(i,icount+1:icount+nelement)
 !!$      END DO
 !!$      DO i = 1, 3
-!!$        read(10) gravity(i,icount+1:icount+npart)
+!!$        read(10) gravity(i,icount+1:icount+nelement)
 !!$      END DO
 !!$      DO i = 1, 3
-!!$        read(10) radpres(i,icount+1:icount+npart)
+!!$        read(10) radpres(i,icount+1:icount+nelement)
 !!$      END DO
 !!$    END IF
 !!$  END IF
   
   IF (contiguous) THEN
-    icount = icount + npart
+    icount = icount + nelement
     icountsink = icountsink + icountsink
   ELSE
     icount = 0
@@ -517,7 +517,7 @@ END SUBROUTINE rdump
     
   
 !---------------------------------------------------------------
-!These create and destroy all the module's arrays, except the sink arrays and npartblocks.
+!These create and destroy all the module's arrays, except the sink arrays and nelementblocks.
   
   SUBROUTINE allocate_arrays
 
@@ -526,9 +526,9 @@ END SUBROUTINE rdump
   IMPLICIT NONE
   integer :: nalloc
   IF (contiguous .AND. nblocks > 1) THEN
-    nalloc = nparttot
+    nalloc = nelementtot
   ELSE
-    nalloc = npart
+    nalloc = nelement
   END IF
   print *, "ALLOCATING HYDRO ARRAYS"
   allocate( isteps(nalloc), iphase(nalloc), iunique(nalloc) )
@@ -569,9 +569,9 @@ END SUBROUTINE rdump
   IMPLICIT NONE
   integer :: nalloc
   IF (contiguous .AND. nblocks > 1) THEN
-    nalloc = nparttot
+    nalloc = nelementtot
   ELSE
-    nalloc = npart
+    nalloc = nelement
   END IF
   print *, "Allocating RT arrays"
   allocate( radneigh(nalloc) )
@@ -601,14 +601,14 @@ END SUBROUTINE rdump
   RETURN
   END SUBROUTINE reallocate_arrays_RT
   
-  !Deallocate all arrays held in this module, including npartblocks.
+  !Deallocate all arrays held in this module, including nelementblocks.
   SUBROUTINE deallocate_all_arrays
     use sphgravdata
   IMPLICIT NONE
   print *, "Deallocating all arrays:"
   IF (allocated(isteps)) CALL deallocate_arrays
   IF (allocated(radneigh)) CALL deallocate_arrays_RT
-  IF (allocated(npartblocks)) deallocate(npartblocks)
+  IF (allocated(nelementblocks)) deallocate(nelementblocks)
   RETURN
   END SUBROUTINE deallocate_all_arrays
 

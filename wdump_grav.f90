@@ -15,10 +15,10 @@
 
       print*, '      - Writing to file'
 
-      write(15,err=100) (gravxyz(1,i), i=1,npart)
-      write(15,err=100) (gravxyz(2,i), i=1,npart)
-      write(15,err=100) (gravxyz(3,i), i=1,npart)
-      write(15,err=100) (iphase(i), i=1,npart)
+      write(15,err=100) (gravxyz(1,i), i=1,nelement)
+      write(15,err=100) (gravxyz(2,i), i=1,nelement)
+      write(15,err=100) (gravxyz(3,i), i=1,nelement)
+      write(15,err=100) (iphase(i), i=1,nelement)
 
       close(15)
 
@@ -31,8 +31,8 @@
 
       print*, '      - Writing to file'
 
-    write(15,err=200)(poten(i), i=1,npart)
-    write(15,err=200)(iphase(i), i=1,npart)
+    write(15,err=200)(poten(i), i=1,nelement)
+    write(15,err=200)(iphase(i), i=1,nelement)
 
       close(15)
 

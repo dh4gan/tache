@@ -12,7 +12,7 @@ if(filetype=='SPH') then
 
    call get_SPH_neighbours
 
-   allocate(tensor(3,3,npart))
+   allocate(tensor(3,3,nelement))
 
    if (tensorchoice=='tidal') then
       print*, "Calculating Tidal Tensor"
@@ -22,13 +22,13 @@ if(filetype=='SPH') then
    percentcount=0.0
 
    ! Loop over particles
-   do ipart = 1,npart
+   do ielement = 1,nelement
 
-      call particle_percent_complete(ipart,npart,percentcount,10.0)
+      call particle_percent_complete(ielement,nelement,percentcount,10.0)
       
       tensor_element(:,:) =0.0
-      call calc_velocityshear_tensor(ipart,tensor_element)
-      tensor(:,:,ipart) = tensor_element(:,:)
+      call calc_velocityshear_tensor(ielement,tensor_element)
+      tensor(:,:,ielement) = tensor_element(:,:)
       
    enddo
    ! End of loop over particles

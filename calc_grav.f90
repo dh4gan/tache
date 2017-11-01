@@ -9,38 +9,38 @@ implicit none
 
 real,dimension(3) :: gravi,dr
 
-integer :: ipart, j,k,ix
+integer :: ielement, j,k,ix
 real :: v, meanpot,sdpot
 
 gravxyz(:,:) = 0.0
 poten(:) = 0.0
 
-do ipart = 1,npart
+do ielement = 1,nelement
 
 gravi(:) = 0.0
 poteni = 0.0
 
-do k = 1, nneigh(ipart)
+do k = 1, nneigh(ielement)
 
-        j = neighb(ipart,k)
+        j = neighb(ielement,k)
 
-        if(j==0) print*, 'AARGH, j=0', j, k,ipart, neighb(ipart,k)
+        if(j==0) print*, 'AARGH, j=0', j, k,ielement, neighb(ielement,k)
 
     ! Separation of particles
         do ix = 1,3
-            dr(ix) = xyzmh(ix,ipart) - xyzmh(ix,j)
+            dr(ix) = xyzmh(ix,ielement) - xyzmh(ix,j)
         enddo
 
         rij2 = sqrt(dr(1)*dr(1) + dr(2)*dr(2) + dr(3)*dr(3))
         rij = sqrt(rij2)
         rij1 = 1./rij
         pmassj = xyzmh(4,j)
-        hi = xyzmh(5,ipart)
+        hi = xyzmh(5,ielement)
         hj = xyzmh(5,j)
 !
 !--Define mean h
 !
-        IF (iphase(ipart).GE.1) THEN
+        IF (iphase(ielement).GE.1) THEN
                hmean = hj/2.0
             ELSEIF (iphase(j).GE.1) THEN
                hmean = hi/2.0
@@ -108,10 +108,10 @@ do k = 1, nneigh(ipart)
 enddo
 ! End of loop over nearest neighbours
 
-poten(ipart) = poten(ipart) + poteni
+poten(ielement) = poten(ielement) + poteni
 
 DO ix=1,3
-    gravxyz(ix,ipart) = gravxyz(ix,ipart) + gravi(ix)
+    gravxyz(ix,ielement) = gravxyz(ix,ielement) + gravi(ix)
 ENDDO
 
 !  Add contribution to the potential from pointmasses
@@ -120,15 +120,15 @@ ENDDO
 
            j = listpm(k)
 
-           if(j==ipart) cycle
+           if(j==ielement) cycle
 
-           sep = (xyzmh(1,ipart) - xyzmh(1,j))**2 + &
-                (xyzmh(2,ipart) - xyzmh(2,j))**2 +&
-                (xyzmh(3,ipart) - xyzmh(3,j))**2
+           sep = (xyzmh(1,ielement) - xyzmh(1,j))**2 + &
+                (xyzmh(2,ielement) - xyzmh(2,j))**2 +&
+                (xyzmh(3,ielement) - xyzmh(3,j))**2
 
            sep =sqrt(sep)
 
-           poten(ipart) = poten(ipart) + xyzmh(4,j)/sep
+           poten(ielement) = poten(ielement) + xyzmh(4,j)/sep
 
     enddo
 
@@ -137,21 +137,21 @@ ENDDO
 
  ! Calculate mean and standard deviation of potential
 
- meanpot = sum(poten)/REAL(npart)
+ meanpot = sum(poten)/REAL(nelement)
  sdpot = 0.0
 
 !$OMP PARALLEL &
-!$OMP shared(nneigh,meanneigh,npart)&
-!$OMP private(ipart) &
+!$OMP shared(nneigh,meanneigh,nelement)&
+!$OMP private(ielement) &
 !$OMP reduction(+:sdneigh)
 !$OMP DO SCHEDULE(runtime)
- do ipart=1,npart
-     sdpot = sdpot+(poten(ipart)-meanpot)**2
+ do ielement=1,nelement
+     sdpot = sdpot+(poten(ielement)-meanpot)**2
  enddo
  !$OMP END DO
  !$OMP END PARALLEL
 
- sdpot = sqrt(sdpot/REAL(npart))
+ sdpot = sqrt(sdpot/REAL(nelement))
 
  print*, 'Mean potential is ', meanpot
  print*, 'Standard Deviation: ', sdpot

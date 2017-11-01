@@ -9,7 +9,7 @@ PROGRAM link_clumps
 
  ! type(sphclump), allocatable :: clump(:) 
 
-  integer :: start,finish,i,j,k,l,npart, kprev, newclump
+  integer :: start,finish,i,j,k,l,nelement, kprev, newclump
   integer,allocatable,dimension(:) :: nclumps
 
   integer, dimension(1) :: temp
@@ -37,7 +37,7 @@ PROGRAM link_clumps
   print*, "What is the initial input filename?"
   read*, file
   print*, 'How many particles does this dump have?'
-  read*, npart
+  read*, nelement
 
   do 
      print*, "What is the final filenumber?"
@@ -73,7 +73,7 @@ PROGRAM link_clumps
 
  ! allocate(clump(finish))
   allocate(nclumps(finish))                                                !(finish is just the number of array dimensions not the number of clumps)
-  allocate(member(finish,npart))
+  allocate(member(finish,nelement))
 
   !***************************************
   ! 1. Identify original clump memberships
@@ -84,13 +84,13 @@ PROGRAM link_clumps
   CLOSE(10)
 
   OPEN(10,file=memberfile(start), status='old',form='unformatted')	
-  read(10) (member(start,i), i=1,npart)	
+  read(10) (member(start,i), i=1,nelement)	
   CLOSE(10)
 
   !	Identify initial clump totals
 
   allocate(clumptot(nclumps(start)))
-  DO i=1,npart
+  DO i=1,nelement
      IF(member(start,i)==0) cycle
      clumptot(member(start,i)) = clumptot(member(start,i)) + 1
   ENDDO
@@ -128,7 +128,7 @@ PROGRAM link_clumps
 
      ! Read membership file
      OPEN(10,file=memberfile(k),status='old',form='unformatted')
-     READ(10) (member(k,i), i=1,npart)
+     READ(10) (member(k,i), i=1,nelement)
      CLOSE(10)
 
      ! If there are less clumps here than in the initial file, print this to screen
@@ -140,7 +140,7 @@ PROGRAM link_clumps
      allocate(newtot(nclumps(k)))
      newtot(:) = 0.0
 
-     DO i=1,npart
+     DO i=1,nelement
 	IF(member(k,i)==0) cycle		
 	newtot(member(k,i)) = newtot(member(k,i)) + 1
      ENDDO
@@ -162,7 +162,7 @@ PROGRAM link_clumps
      !************************************************************************
      ! 3. Record all instances of particle matches in clumps from kprev and k
      !************************************************************************
-     DO i=1,npart
+     DO i=1,nelement
         IF(member(kprev,i)*member(k,i)/=0) THEN
            matches(member(kprev,i),member(k,i)) = matches(member(kprev,i),member(k,i)) + 1
         ENDIF

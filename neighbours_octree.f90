@@ -65,14 +65,14 @@ subroutine neighbours_octree(sphfile)
 
      ! Now loop over all particles
 
-     do j=1,npart
+     do j=1,nelement
 
          if(iphase(j)<0) cycle
 
          ! printing the extent to which the process is complete
-         percent = 100.0*REAL(j)/REAL(npart)
+         percent = 100.0*REAL(j)/REAL(nelement)
 
-         if(MOD(real(j), real(npart)/10.0)<1.0) THEN
+         if(MOD(real(j), real(nelement)/10.0)<1.0) THEN
              write(*,'(I3," % complete")') INT(percent)
          ENDIF
 
@@ -251,21 +251,21 @@ subroutine neighbours_octree(sphfile)
  endif
 
  ! Calculate mean and standard deviation of neighbour counts
- meanneigh = sum(nneigh)/REAL(npart)
+ meanneigh = sum(nneigh)/REAL(nelement)
  sdneigh = 0.0
 
 !$OMP PARALLEL &
-!$OMP shared(nneigh,meanneigh,npart)&
+!$OMP shared(nneigh,meanneigh,nelement)&
 !$OMP private(i) &
 !$OMP reduction(+:sdneigh)
 !$OMP DO SCHEDULE(runtime)
- do i=1,npart
+ do i=1,nelement
      sdneigh = sdneigh+(nneigh(i)-meanneigh)**2
  enddo
  !$OMP END DO
  !$OMP END PARALLEL
 
- sdneigh = sqrt(sdneigh/REAL(npart))
+ sdneigh = sqrt(sdneigh/REAL(nelement))
 
  print*, 'Mean neighbour number is ', meanneigh
  print*, 'Standard Deviation: ', sdneigh

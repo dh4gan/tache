@@ -12,7 +12,7 @@ module sphdata
 
   !-------------------Single values---------------------------------------
   ! Integers
-  integer :: npart,naccrete,n1,n2,nreassign,nkill,nblocks
+  integer :: nelement,naccrete,n1,n2,nreassign,nkill,nblocks
 
   ! Can't allocate sink arrays at runtime for MPI as we don't store nsinktotal
   integer, parameter :: nptmax = 1000 
@@ -32,12 +32,12 @@ module sphdata
 
   integer :: iblock !iblock is the block we're currently working on
 
-  integer :: nparttot !total number of particles
-  integer, allocatable :: npartblocks(:) !number of particles in each block
+  integer :: nelementtot !total number of particles
+  integer, allocatable :: nelementblocks(:) !number of particles in each block
 
   integer :: iuniquemax
 
-  !npart contains number of current data, whether for 1 block or a whole simulation
+  !nelement contains number of current data, whether for 1 block or a whole simulation
 
   ! Reals
   real :: gt, dtmaxdp,gamma,rhozero,RK2,escap,tkin,tgrav,tterm

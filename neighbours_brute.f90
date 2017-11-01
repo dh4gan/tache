@@ -36,18 +36,18 @@ IF(existneigh.eqv..false.) then
   ! Shared: iphase, xyzmh, nneigh, neighb, neighmax, tiny
   ! Private: i,j,hi,hj,hmean,sep
   !$OMP PARALLEL &
-  !$OMP shared(npart, iphase,xyzmh, nneigh,neighb) &
+  !$OMP shared(nelement, iphase,xyzmh, nneigh,neighb) &
   !$OMP private(i,j,hi,hj,hmean,sep)
   !$OMP DO SCHEDULE(runtime)
-  do i=1,npart
+  do i=1,nelement
 
       IF(iphase(i)<0) cycle
-      percent = 100.0*REAL(i)/REAL(npart)
-      if(MOD(real(i), real(npart)/10.0)<1.0) THEN
+      percent = 100.0*REAL(i)/REAL(nelement)
+      if(MOD(real(i), real(nelement)/10.0)<1.0) THEN
           write(*,'(I3," % complete")') INT(percent)
       ENDIF
 
-      do j=1,npart
+      do j=1,nelement
 
           IF(i==j) cycle
           IF(iphase(j)<0) cycle

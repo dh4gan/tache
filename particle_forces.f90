@@ -1,41 +1,41 @@
-SUBROUTINE particle_forces(ipart,jpart, potential, gravforce)
+SUBROUTINE particle_forces(ielement,jpart, potential, gravforce)
 ! Calculates contributions to the gravitational potential and force vector
-! of ipart due to jpart
+! of ielement due to jpart
 
 use sphgravdata
 use sphkerneldata
 
 implicit none
 
-integer :: ipart, jpart, ix
+integer :: ielement, jpart, ix
 
 real, dimension(3) :: dr
 real, dimension(3), intent(inout):: gravforce
 real, intent(inout) :: potential
 real :: dph, v
 
-if(ipart==jpart) return
-if(iphase(ipart)<0) return
+if(ielement==jpart) return
+if(iphase(ielement)<0) return
 if(iphase(jpart)<0) return
 
 
  ! Separation of particles
               do ix = 1,3
-                 dr(ix) = xyzmh(ix,ipart) - xyzmh(ix,jpart)
+                 dr(ix) = xyzmh(ix,ielement) - xyzmh(ix,jpart)
               enddo
 
               rij2 = sqrt(dr(1)*dr(1) + dr(2)*dr(2) + dr(3)*dr(3))
               rij = sqrt(rij2)
               rij1 = 1./rij
               pmassj = xyzmh(4,jpart)
-              hi = xyzmh(5,ipart)
+              hi = xyzmh(5,ielement)
               hj = xyzmh(5,jpart)
 
               !
               !--Define mean h
               !
 
-              IF (iphase(ipart).GE.1) THEN
+              IF (iphase(ielement).GE.1) THEN
                  hmean = hj/2.0
               ELSEIF (iphase(jpart).GE.1) THEN
                  hmean = hi/2.0

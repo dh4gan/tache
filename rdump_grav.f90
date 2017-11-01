@@ -14,9 +14,9 @@
 ! Open and read gravity file
       print*, '2a) Gravity file: ', gravfile
 
-      allocate(gravxyz(3,npart))
-      allocate(testph(npart)   )
-      allocate(tphase(npart)   )
+      allocate(gravxyz(3,nelement))
+      allocate(testph(nelement)   )
+      allocate(tphase(nelement)   )
 
       open(15,file=gravfile, form="unformatted",status="old", &
            action='read',iostat=ios)
@@ -27,12 +27,12 @@
       endif
       print*, '      - Reading in Gravity file'
 
-      read(15,err=100) (gravxyz(1,i), i=1,npart)
-      read(15,err=100) (gravxyz(2,i), i=1,npart)
-      read(15,err=100) (gravxyz(3,i), i=1,npart)
-      read(15,err=100) (testph(i), i=1,npart)
+      read(15,err=100) (gravxyz(1,i), i=1,nelement)
+      read(15,err=100) (gravxyz(2,i), i=1,nelement)
+      read(15,err=100) (gravxyz(3,i), i=1,nelement)
+      read(15,err=100) (testph(i), i=1,nelement)
 
-      do i=1,npart
+      do i=1,nelement
          tphase(i) = unit*testph(i)
       enddo
 
@@ -45,9 +45,9 @@
 ! Open and read Potential file
       print*, '2b) Potential file: ', potfile
 
-      allocate(poten(npart))
-      allocate(testph(npart)   )
-      allocate(uphase(npart)   )
+      allocate(poten(nelement))
+      allocate(testph(nelement)   )
+      allocate(uphase(nelement)   )
 
       open(15,file=potfile, form="unformatted",status="old", &
            action='read',iostat=ios)
@@ -58,10 +58,10 @@
       endif
       print*, '      - Reading in Potential file'
 
-      read(15,err=200) (poten(i), i=1,npart)
-!      read(15,err=200) (testph(i), i=1,npart)
+      read(15,err=200) (poten(i), i=1,nelement)
+!      read(15,err=200) (testph(i), i=1,nelement)
 
-     do i=1,npart
+     do i=1,nelement
 !         uphase(i) = unit*testph(i)
         uphase(i) = tphase(i)
       enddo

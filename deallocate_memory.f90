@@ -28,7 +28,7 @@ implicit none
      print*, 'SPH memory deallocated'
 
      ! Some MPI arrays might need to be deallocated too
-     if(allocated(npartblocks)) deallocate(npartblocks)
+     if(allocated(nelementblocks)) deallocate(nelementblocks)
      if(allocated(iunique)) deallocate(iunique)
 
 END SUBROUTINE deallocate_memory

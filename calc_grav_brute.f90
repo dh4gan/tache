@@ -11,11 +11,11 @@ SUBROUTINE calc_grav_brute
 
   real,dimension(3) :: gravi
 
-  integer :: ipart, jpart,k,ix
+  integer :: ielement, jpart,k,ix
   real :: meanpot,sdpot, percent,counter
 
-  allocate(gravxyz(3,npart))
-  allocate(poten(npart))
+  allocate(gravxyz(3,nelement))
+  allocate(poten(nelement))
 
   gravxyz(:,:) = 0.0
   poten(:) = 0.0
@@ -24,9 +24,9 @@ SUBROUTINE calc_grav_brute
 
   percent = 0.0
   counter = 1.0
-  do ipart = 1,npart
+  do ielement = 1,nelement
 
-     percent = REAL(ipart)/REAL(npart)*100.0
+     percent = REAL(ielement)/REAL(nelement)*100.0
 
      if(percent>counter)then
         print*, counter,'% complete'
@@ -37,19 +37,19 @@ SUBROUTINE calc_grav_brute
      poteni = 0.0
 
      !$OMP PARALLEL &
-     !$OMP shared(ipart, npart,poten,gravxyz) &
+     !$OMP shared(ielement, nelement,poten,gravxyz) &
      !$OMP private(jpart,poteni,gravi,ix) 
      !$OMP DO SCHEDULE(runtime)
-     do jpart = 1,npart
+     do jpart = 1,nelement
 
-        if(ipart==jpart) cycle
+        if(ielement==jpart) cycle
 
-        call particle_forces(ipart,jpart,poteni,gravi)
+        call particle_forces(ielement,jpart,poteni,gravi)
 
-        poten(ipart) = poten(ipart) + poteni
+        poten(ielement) = poten(ielement) + poteni
 
         DO ix=1,3
-           gravxyz(ix,ipart) = gravxyz(ix,ipart) + gravi(ix)
+           gravxyz(ix,ielement) = gravxyz(ix,ielement) + gravi(ix)
         ENDDO
 
      enddo
@@ -65,38 +65,38 @@ SUBROUTINE calc_grav_brute
 
         jpart = listpm(k)
 
-        if(jpart==ipart) cycle
+        if(jpart==ielement) cycle
 
-        sep = (xyzmh(1,ipart) - xyzmh(1,jpart))**2 + &
-             (xyzmh(2,ipart) - xyzmh(2,jpart))**2 +&
-             (xyzmh(3,ipart) - xyzmh(3,jpart))**2
+        sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
+             (xyzmh(2,ielement) - xyzmh(2,jpart))**2 +&
+             (xyzmh(3,ielement) - xyzmh(3,jpart))**2
 
         sep =sqrt(sep)
 
-        poten(ipart) = poten(ipart) + xyzmh(4,jpart)/sep
+        poten(ielement) = poten(ielement) + xyzmh(4,jpart)/sep
 
      enddo
-     !print*, 'Particle ', ipart, ': Potential - ', poten(ipart), 'Force: ',gravi(:)
+     !print*, 'Particle ', ielement, ': Potential - ', poten(ielement), 'Force: ',gravi(:)
   ENDDO
   ! End loop over all particles
 
   ! Calculate mean and standard deviation of potential
 
-  meanpot = sum(poten)/REAL(npart)
+  meanpot = sum(poten)/REAL(nelement)
   sdpot = 0.0
 
   !$OMP PARALLEL &
-  !$OMP shared(nneigh,meanneigh,npart)&
-  !$OMP private(ipart) &
+  !$OMP shared(nneigh,meanneigh,nelement)&
+  !$OMP private(ielement) &
   !$OMP reduction(+:sdneigh)
   !$OMP DO SCHEDULE(runtime)
-  do ipart=1,npart
-     sdpot = sdpot+(poten(ipart)-meanpot)**2
+  do ielement=1,nelement
+     sdpot = sdpot+(poten(ielement)-meanpot)**2
   enddo
   !$OMP END DO
   !$OMP END PARALLEL
 
-  sdpot = sqrt(sdpot/REAL(npart))
+  sdpot = sqrt(sdpot/REAL(nelement))
 
   print*, 'Mean potential is ', meanpot
   print*, 'Standard Deviation: ', sdpot

@@ -3,7 +3,7 @@ SUBROUTINE make_octree(sphfile)
   USE sphgravdata	
   USE treedata
   IMPLICIT NONE  
-  integer :: ipar,n_open,binlog,ic,ipart,j,l
+  integer :: ipar,n_open,binlog,ic,ielement,j,l
   integer :: flag,testnode,maxcheck, n_leaf
   integer,allocatable, dimension(:) :: ibin,counter, is_leaf
   character(7) :: sphfile, filecheck,filecheck2
@@ -52,7 +52,7 @@ character(18)::partbinfile
       allocate(m_node(n_node))
       allocate(occ(n_node,nodemax))
       allocate(ibin(n_node))
-      allocate(partbin(npart))
+      allocate(partbin(nelement))
 
       allocate(r_node(3,n_node))
       allocate(com_node(3,n_node))
@@ -95,8 +95,8 @@ character(18)::partbinfile
 
       open(2,file=partbinfile,form='unformatted')
       read(2) filecheck2
-      do ipart = 1, npart
-          read(2) l, iphase(ipart), partbin(ipart)
+      do ielement = 1, nelement
+          read(2) l, iphase(ielement), partbin(ielement)
       enddo
       close(2)
 
@@ -106,10 +106,10 @@ character(18)::partbinfile
       print*, "-----------------------------------------------"
       ibin(:) = 0
 
-      do ipart = 1,npart
-          ic = partbin(ipart)
+      do ielement = 1,nelement
+          ic = partbin(ielement)
           ibin(ic) = ibin(ic) + 1
-          if(ibin(ic)<=nodemax) occ(ic,ibin(ic)) = ipart
+          if(ibin(ic)<=nodemax) occ(ic,ibin(ic)) = ielement
       enddo
 
   endif
@@ -122,7 +122,7 @@ character(18)::partbinfile
 
      print*, 'No satisfactory node fileset found: creating octree from scratch'
      print*, "-----------------------------------------------"
-     n_node = INT(npart/nodemax)	
+     n_node = INT(nelement/nodemax)	
      testnode =1
 
      do while (n_node>testnode)
@@ -134,7 +134,7 @@ character(18)::partbinfile
 999 continue ! Returns here if n_node insufficient
 	
      WRITE(*,*) 'Nodes, nodemax, particles:'
-     WRITE(*,*) n_node, nodemax, npart		
+     WRITE(*,*) n_node, nodemax, nelement		
      n_leaf = 0
 
      !	Now create tree - allocate variables
@@ -146,7 +146,7 @@ character(18)::partbinfile
      allocate(m_node(n_node))
      allocate(com_node(3,n_node))
      allocate(occ(n_node,nodemax))
-     allocate(partbin(npart))
+     allocate(partbin(nelement))
      allocate(ibin(n_node))				
      allocate(r_node(3,n_node))
      allocate(dr_node(3,n_node))
@@ -188,7 +188,7 @@ character(18)::partbinfile
 
      parent(1) = 0
      n_child(1) = 8
-     n_occ(1) = npart
+     n_occ(1) = nelement
 
      partbin(:) = 1
 
@@ -326,18 +326,18 @@ character(18)::partbinfile
 
 
            !$OMP PARALLEL &
-           !$OMP shared(npart, iphase, partbin, n_occ, xyzmh) &
+           !$OMP shared(nelement, iphase, partbin, n_occ, xyzmh) &
            !$OMP shared(ic, ipar, occ, binlog, ibin) &
            !$OMP shared(bbr_min, bbr_max) &
-           !$OMP private(ipart,j, flag)
+           !$OMP private(ielement,j, flag)
            !$OMP DO SCHEDULE(runtime)
 
-           do ipart = 1,npart
-               if(iphase(ipart) < 0) cycle ! Skip all accreted particles
+           do ielement = 1,nelement
+               if(iphase(ielement) < 0) cycle ! Skip all accreted particles
                flag=0
 
                !	If particle not in parent node, then no need to test
-               if(partbin(ipart)/=ipar) cycle
+               if(partbin(ielement)/=ipar) cycle
 
                !	If all particles in parent node binned, no need to test
                ! any further
@@ -345,7 +345,7 @@ character(18)::partbinfile
 
                !	Flag particle if outside cell bounds
                do j=1,3
-                   if(ABS(xyzmh(j,ipart)-r_node(j,ic))>dr_node(j,ic)) flag=1
+                   if(ABS(xyzmh(j,ielement)-r_node(j,ic))>dr_node(j,ic)) flag=1
                enddo
 
                !	If particle in cell bounds, then increase n_occ
@@ -356,37 +356,37 @@ character(18)::partbinfile
                    ibin(ic) = ibin(ic) +1
                    binlog = binlog +1
                    if(ibin(ic)<=nodemax) then
-                       occ(ic,ibin(ic)) = ipart
+                       occ(ic,ibin(ic)) = ielement
                    endif
                    n_occ(ic) = n_occ(ic) +1
                    ! Update total mass of node, and centre of mass
-                   m_node(ic) = m_node(ic)+xyzmh(4,ipart)
+                   m_node(ic) = m_node(ic)+xyzmh(4,ielement)
 
                    do j=1,3
-                      com_node(j,ic) = com_node(j,ic) + xyzmh(j,ipart)*xyzmh(4,ipart)
+                      com_node(j,ic) = com_node(j,ic) + xyzmh(j,ielement)*xyzmh(4,ielement)
                    enddo                  
 
-                   partbin(ipart) = ic
+                   partbin(ielement) = ic
 
-                    IF(partbin(ipart)==0) then
-                    print*, "Huh? ", ipart, iphase(ipart), ic, binlog, n_occ(ipar), n_occ(ic)
+                    IF(partbin(ielement)==0) then
+                    print*, "Huh? ", ielement, iphase(ielement), ic, binlog, n_occ(ipar), n_occ(ic)
                     endif
                    !	Reset AABB if necessary
                    do j=1,3
 
-                       if(xyzmh(j,ipart)-2.0d0*xyzmh(5,ipart)<bbr_min(j,ic)) then
-                           bbr_min(j,ic) = xyzmh(j,ipart)-2.0d0*xyzmh(5,ipart)
+                       if(xyzmh(j,ielement)-2.0d0*xyzmh(5,ielement)<bbr_min(j,ic)) then
+                           bbr_min(j,ic) = xyzmh(j,ielement)-2.0d0*xyzmh(5,ielement)
                        endif
 
-                       if(xyzmh(j,ipart)+2.0d0*xyzmh(5,ipart)>bbr_max(j,ic)) then
-                           bbr_max(j,ic) = xyzmh(j,ipart)+2.0d0*xyzmh(5,ipart)
+                       if(xyzmh(j,ielement)+2.0d0*xyzmh(5,ielement)>bbr_max(j,ic)) then
+                           bbr_max(j,ic) = xyzmh(j,ielement)+2.0d0*xyzmh(5,ielement)
                        endif
 
                    enddo
                    !$OMP END CRITICAL 
 
                endif
-              !	End binning for particle ipart
+              !	End binning for particle ielement
 
            enddo
            !$OMP END DO
@@ -451,8 +451,8 @@ CLOSE(2)
 
 open(2,file=partbinfile,form='unformatted')
 write(2) sphfile
-do ipart = 1, npart
-    write(2) ipart, iphase(ipart), partbin(ipart)
+do ielement = 1, nelement
+    write(2) ielement, iphase(ielement), partbin(ielement)
 enddo
 close(2)
 endif

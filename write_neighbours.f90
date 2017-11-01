@@ -15,8 +15,8 @@ print*, 'Writing to file ', neighbourfile
  OPEN (2, file=neighbourfile, form='unformatted')
 
  WRITE(2)  neighmax, tolerance, meanneigh,sdneigh,neighcrit
- WRITE(2) (nneigh(i), i=1,npart)
- do i=1,npart
+ WRITE(2) (nneigh(i), i=1,nelement)
+ do i=1,nelement
      WRITE(2) (neighb(i,j), j=1,nneigh(i))
  enddo
 

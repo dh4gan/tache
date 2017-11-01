@@ -30,7 +30,7 @@ module sphneighbourdata
   
  ! Data for regular grids only (occ, n_occ, xmax,ymax,zmax shared with octree)
   
-  integer :: ncells, ngridx,ngridy,ngridz, cellmax, nparticlelist, ncellrange
+  integer :: ncells, ngridx,ngridy,ngridz, cellmax, nelementiclelist, ncellrange
   integer, allocatable,dimension(:) :: particlelist, cellist,isortcellpart
 
   real :: dgrid
