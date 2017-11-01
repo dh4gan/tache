@@ -1,250 +1,201 @@
-program sphNG_grav_plus_neighbours
-
-  !	Code calculates gravitational forces, potentials and
-  ! Computes neighbour lists for sphNG dumps
-
+PROGRAM tache
+  ! This program reads in hydrodynamic simulation files and 
+  ! performs tensor classification
+  ! Eigenvalues of the tensor determine what environment 
+  ! an hydrodynamic fluid element is in
+  
   use sphgravdata
   use treedata
-  use sphkerneldata
-
-  implicit none
-
-  real, parameter :: pi = 3.141592653
-  real, parameter :: twopi = 2.0*pi
-
-  real :: dgridmin
-
-  character(4) :: fileroot
-
-  integer :: check,skip,i,n,ipart,start,finish, counter
-
-  character(1) :: use_octree_grid, grav_calc_choice
-  character(3),dimension(1000) :: num
-  character(7),dimension(1000) :: filename,gravfile
-  character(6),dimension(1000) :: potfile
-  character(100) :: filedir, inputfile
-
-  ! Get input parameters and set up header:
-  print*, " "
-  print*, "-----------------------------------------------"  
-  print*, "     sphNG GRAVITY AND NEIGHBOURS CALCULATOR         "
-  print*, "     Created by D. Forgan, 1st September 2014    "
-  print*, "	                                       	  "
-  print*, "-----------------------------------------------"
-  print*, " "
-  print*, " If SPH read fails, check the following:"
-  print*, "    - File endianness"
-  print*, "    - Default real size"
-  print*, " "
-  print*, " For the gfortran compiler, inserting or "
-  print*, " removing the following flags should correct"
-  print*, " the problem:"
-  print*, "    -fconvert=swap"
-  print*, "       (swaps endianness during read-in)"
-  print*, "    -fdefault-real-8"
-  print*, "       (sets default real to double precision)"
-  print*, " "      
-  print*, " "
-  print*, " input parameters in ./sphNGgravplus.params"
-  print*, "-----------------------------------------------"
-  print*, " "
-
-  OPEN(10,file='sphNGgravplus.params', status='old')
-  READ(10,*) filedir ! File Directory
-  READ(10,'(A4)') fileroot   ! File prefix
-  READ(10,*) start  ! starting filenumber
-  READ(10,*) finish ! Final filenumber
-  READ(10,*) use_octree_grid ! Use octree (o) or grid (g) for neighbour search?
-  READ(10,*) grav_calc_choice ! Use octree (o), brute force (b) or potential (p) to calc gravity forces?
-  READ(10,*) dgridmin ! If using grid, this is the minimum grid length
-  CLOSE(10)
-
-  if (start>=1000) stop "Error! sphNG doesn't have filenumbers above 1000"  
   
+  implicit none
+  
+  real,parameter :: pi = 3.141592653
+  real, parameter :: twopi = 2.0*pi
+  
+  integer, parameter:: it_max = 10
+  
+  integer,allocatable,dimension(:) :: eigenpart
+  
+  real, allocatable, dimension (:,:,:) :: velocityshear, eigenvectors,eigenvecbin
+  real, allocatable, dimension(:,:) :: eigenvalues, eigenbin
+  real, allocatable, dimension(:) :: xbin, ybin, zbin
+  
+  real, dimension (3,3) :: tensor, eigenvec
+  real, dimension(3) :: eigen
+  
+  integer :: ipart, i,j,k,n, start, finish, check, skip
+  integer :: it_num, rot_num, ngas, counter
+  
+  real :: vmean, percentcount
+  
+  character(1) :: use_octree, scalevelocity
+  character(4) :: fileroot
+  character(3),dimension(1000) :: num
+  character(7),dimension(1000) :: filename,gravfile,potfile
+  character(7), dimension(1000) :: eigenfile,vectorfile
+  character(100) :: inputfile, filedir
+  character(18) :: neighbourfile
+  logical :: existneigh
+  
+  ! Initialise parameters
+  
+  call initial
+      
+  ! Now begin tensor classification, file by file
+  DO ifile=1,nfiles
 
-  if (finish>=1000) then
-     print*, "Warning! sphNG doesn't have filenumbers >1000"
-     print*, "Setting finish=999"
-     finish =999
-  endif
+     ! *********************
+     ! 1. Read in data file
+     ! *********************
 
-  print*, 'sphNGgravplus.params successfully read '
+     call read_dump(filename(ifile),skipdump)
 
-  ! Write relevant filenames:
-  do i = start,finish
+     if(skipdump.eqv..true.) cycle
+    
 
-     if (i <= 9) then
-        write(num(i),'("00",I1)') i
-     elseif (i <= 99) then
-        write(num(i),'("0",I2)') i
-     else
-        write(num(i),'(I3)') i
-     endif
+     !********************************************
+     ! 2. Compute derivatives and construct tensor
+     !********************************************
+
+     call compute_tensor
+
+     !*******************************************
+     ! 3. Compute eigenvalues of the tensor
+     !*******************************************
+
+     call calc_eigenvalues
+
+     !******************************************
+     ! 4. Write data to files
+     !******************************************
+
+     call write_eigendata
+
+     ! If we want to split dump into tensor classified components, do it here
+     if(splitdump=='y') call splitdump
+
+     ! Deallocate memory ready for the next run
+     call deallocate_memory
 
 
-     write(filename(i),'(A4,A3)') fileroot, num(i)
-     write(gravfile(i),'("grav",A3)') num(i)
-     write(potfile(i), '("pot",A3)') num(i)         
+     ! End of loop over files
   enddo
 
-  ! Load Kernel Tables for later interpolation
+     !
+     ! 4. Write data to file 
+     !
 
-  print*, 'Loading Kernel Table Data'
-  CALL ktable
-
-  ! Loop over files
-  DO n=start, finish
-
-
-     !******************************************************************
-     ! 1.  Read in SPH file
-     !******************************************************************
-
-     check =0
-     skip = 0
-
-     !	Read in SPH dump
-
-     inputfile = TRIM(filedir)//filename(n)
-
-     print*, 'File located at ', filedir
-     print*, 'Address: ',inputfile
-
-     print*, inputfile
-
-     call rdump(inputfile,check,skip)
-
-     ! Skip small dumps
-     if(skip/=0) THEN
-	print*, 'Skipping small dump'			
-	cycle
-     ENDIF
-
-     if (check /= 0) then
-        !	If file missing in series, skip it
-	IF(n==start) THEN
-           print*, 'ERROR: First file missing! Program aborted at sph read in'
-           stop
-        ELSE
-           print*, 'Skipping missing dump ',filename(n)
-           print*, "-----------------------------------------------"
-           print*, " "
-           cycle
-	ENDIF
-     endif
-
-
-     allocate(isort(npart))
-     allocate(iorig(npart))		
-
-
-    !*************************************
-    ! 2. Find neighbours for all particles
-    !*************************************
 
      ! Find maximum and minimum values for all coordinates
      xmax = 0.0
      ymax = 0.0
      zmax = 0.0
 
-     counter = 0
-     hmean =0.0
-     do ipart=1,npart		
-	isort(ipart) = ipart
+     allocate(isort(npart))
+     allocate(iorig(npart))
+
+     ngas = 0
+     do ipart=1,npart
+       ! rho(ipart) = xyzmh(4,ipart)/(xyzmh(5,ipart)**3) ! DEBUG LINE
+        isort(ipart) = ipart
         iorig(ipart) = ipart
+
+        if(iphase(ipart)==0) ngas = ngas +1
 
         IF(abs(xyzmh(1,ipart))> xmax) xmax = abs(xyzmh(1,ipart))
         IF(abs(xyzmh(2,ipart))> ymax) ymax = abs(xyzmh(2,ipart))
         IF(abs(xyzmh(3,ipart))> zmax) zmax = abs(xyzmh(3,ipart))
 
-        if(iphase(ipart)==0) then
-           hmean = hmean + xyzmh(5,ipart)
-           counter = counter +1
-        endif
      enddo
 
-     hmean = hmean/real(counter)
+     print*,'-----------------------------------------'
+     print*, "Maximum values for spatial co-ordinates: "
+     print*, "x: ", xmax
+     print*, "y: ", ymax
+     print*, "z: ", zmax
 
-     print*,  "-----------------------------------------------"
-     print*, 'Mean smoothing length is ', hmean
 
-    ! Set up neighbour lists
 
-     allocate(nneigh(npart))
-     allocate(neighb(npart,neighmax))
-     nneigh(:) = 0
-     neighb(:,:) = 0
+     
+     ! ********************************************
+     ! 2. Calculate Velocity Shear Tensor for all particles
+     ! ********************************************
 
-     if(use_octree_grid=='o') THEN
+     
+     ! ****************************************
+     ! 3. Calculate Eigenvalues of the Tidal Tensor
+     ! ****************************************
 
-        print*, "-----------------------------------------------"
-        print*, 'Building octree'
-        CALL make_octree(filename(n))
+   
 
-        !	Use octree to find neighbours    
-  
-        print*, "-----------------------------------------------"
-        print*, 'Creating Neighbour Lists, npart: ',npart		
-        CALL neighbours_octree(filename(n))
+   
 
-        print*, 'Neighbour lists created'
-        print*, "-----------------------------------------------"			
-
-     ELSE IF (use_octree_grid=='g') THEN
-
-        print*, "-----------------------------------------------"
-        print*, 'Building regular grid'
-        CALL make_grid(filename(n),hmean,dgridmin)
-
-        !	Use grid to find neighbours    
-  
-        print*, "-----------------------------------------------"
-        print*, 'Creating Neighbour Lists from grid, npart: ',npart		
-        CALL neighbours_grid(filename(n))
-
-        print*, 'Neighbour lists created'
-        print*, "-----------------------------------------------"
-
-     ELSE
-        print*, 'Finding neighbours by brute force'
-        CALL neighbours_brute(filename(n))
-     ENDIF
-          
-     !**********************************
-     ! 3. Calculate Gravitational Forces
-     !***********************************
-          
-    
-    IF(use_octree_grid=='o' .and. grav_calc_choice=='o') THEN
-
-       print*, 'Calculating Gravitational Force and Potential Using Octree'
-       call calc_grav_tree
-
-    ELSE IF(grav_calc_choice=='p' .and.allocated(poten)) THEN
-       print*, 'Using potentials to calculate gravitational forces'
-       call calc_grav_from_pot
-
-    ELSE IF(grav_calc_choice=='b') THEN
-       print*, 'Carrying out Brute Force gravity calculation'
-       call calc_grav_brute
-    ELSE
-       print*, 'WARNING: Parameters not clear'
-       print*, 'calculating gravity via brute force to be safe'
-       print*, 'structure choice: ',use_octree_grid
-       print*, 'gravity calculation choice: ', grav_calc_choice
-       call calc_grav_brute
-    endif
 
     
-    !***********************************
-    ! 4. Write to File
-    !***********************************
+     print*, '----------------------'
+     print*, 'Writing to file ', TRIM(eigenfile(n))
 
-    ! Write gravity data to file
-    call wdump_grav(gravfile(n),potfile(n))
+     ! Write data to file - for now, simple formatted file
+
+     ! Write data to binary file
+
+     ! Prepare special arrays for binary write
+
+     allocate(xbin(ngas))
+     allocate(ybin(ngas))
+     allocate(zbin(ngas))
+     allocate(eigenbin(3,ngas))
+     allocate(eigenvecbin(3,3,ngas))
+     allocate(eigenpart(ngas))
+
+     counter =1
+     do ipart=1,npart
+        if(iphase(ipart)/=0) cycle
+        if(allocated(iunique)) then
+           eigenpart(counter) = iunique(ipart)
+        else
+           eigenpart(counter) = ipart
+        endif
+        xbin(counter) = xyzmh(1,ipart)
+        ybin(counter) = xyzmh(2,ipart)
+        zbin(counter) = xyzmh(3,ipart)
+        do k=1,3
+           eigenbin(k,counter) = eigenvalues(k,ipart)
+           do j=1,3
+              eigenvecbin(j,k,counter) = eigenvectors(j,k,ipart)
+           enddo
+        enddo
+        
+        counter = counter +1
+     enddo
+
+     open(27,file=eigenfile(n), status='unknown',form='unformatted')
+     write(27) ngas
+     write(27) (eigenpart(i),i=1,ngas)
+     write(27) (xbin(i), i=1,ngas)
+     write(27) (ybin(i), i=1,ngas)
+     write(27) (zbin(i), i=1,ngas)
+     write(27) (eigenbin(1,i), i=1,ngas)
+     write(27) (eigenbin(2,i), i=1,ngas)     
+     write(27) (eigenbin(3,i), i=1,ngas)
+     close(27)
+
+     ! Now write the eigenvectors to file
+     open(27,file=vectorfile(n),status='unknown', form='unformatted')
+     write(27) ngas
+     write(27) (eigenpart(i),i=1,ngas)
+     write(27) (eigenvecbin(1,1:3,i),i=1,ngas)
+     write(27) (eigenvecbin(2,1:3,i),i=1,ngas)
+     write(27) (eigenvecbin(3,1:3,i),i=1,ngas)
 
 
-    call deallocate_memory
- 
-  ENDDO
-END program  sphNG_grav_plus_neighbours
+     deallocate(xbin,ybin,zbin,eigenbin,eigenpart, eigenvecbin)
+
+     call deallocate_memory
+
+     deallocate(eigenvalues,velocityshear, eigenvectors)
+     print*, 'Tensor memory deallocated'
+
+  enddo
+
+END PROGRAM tache
