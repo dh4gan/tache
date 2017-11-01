@@ -4,6 +4,7 @@ SUBROUTINE calc_grav_from_pot
   use sphdata
   use sphneighbourdata
   use sphkerneldata
+  use tachedata, only: nelement
 
   implicit none
 

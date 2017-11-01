@@ -1,9 +1,10 @@
-subroutine neighbours_grid(sphfile)
+subroutine neighbours_grid
   ! Subroutine finds nearest neighbours in radius 2h, using the regular grid
   ! h already defined for all particles
   ! This counts accreted particles and pointmasses too
 
   use sphdata
+  use tachedata, only: nelement
   use sphneighbourdata
   IMPLICIT NONE
 
@@ -13,150 +14,96 @@ interface
    end subroutine find_particles_in_range
 end interface
 
-
-  character(7) ::sphfile
-  character(18) :: neighbours
-  logical :: existneigh
-
   integer :: ielement,jelement, k
 
   real :: hi,hj, hmean, range, sep,percent,counter
   real, parameter :: tiny = 1.0e-34
 
-  ! Check if a neighbourhood file currently exists. 
-  print*, "-----------------------------------------------"
-  print*, 'Searching for neighbourhood fileset'
-  write(neighbours,'("neighbours_",A7)') sphfile
 
-
-  ! Check if file is available
-  INQUIRE(file=neighbours,exist=existneigh)
-
-  IF(existneigh.eqv..true.) then
-     print*, 'Neighbourhood file found: reading'
-
-     call read_neighbours(neighbours)
-
-  ENDIF
-
-
-
-  !------------------------------------------------------------------------------
-
-  IF(existneigh.eqv..false.) then
-     print*, 'No satisfactory fileset found: creating neighbours from scratch'
-     print*, "----------------------------------------------------------------"
-
-     ! Loop over all particles
-
-     percent = 0.0
-     counter = 1.0
-
-     do ielement = 1,nelement
-
-        if(iphase(ielement)/=0) cycle
-         ! printing the extent to which the process is complete
-         percent = 100.0*REAL(ielement)/REAL(nelement)
-
-        if(percent>counter)then
-            print*, counter,'% complete'
-            counter = counter +1.0
-        endif
-
-
-        ! Find all grid cells within tolerance*h of the particle
-
-        range = tolerance*xyzmh(5,ielement)        
-        hi = xyzmh(5,ielement)
-
-        ! Create list of all cells in range of the particle
-        ! And a list of all particles in these cells
-
-        call find_particles_in_range(xyzmh(1,ielement),xyzmh(2,ielement),&
-             xyzmh(3,ielement), range)
-
-        ! Test for neighbourship all particles in the particle list
-
-        !print*, ielement, ncellrange, nelementiclelist
-        !$OMP PARALLEL &
-        !$OMP shared(nelementiclelist,particlelist,iphase,hi,ielement)&
-        !$OMP shared(xyzmh,nneigh,neighb) &
-        !$OMP private(k,jelement,hj,hmean,sep)
-        !$OMP DO SCHEDULE(runtime)
-        do k = 1,nelementiclelist
-           jelement = particlelist(k)
-           !print*,ielement, k,nelementiclelist, jelement
-           IF(ielement==jelement) cycle
-           IF(iphase(jelement)/=0) cycle
-           
-           hj = xyzmh(5,jelement)
-           
-           if(ielement/=jelement) then
-
-             hmean = (hi + hj)/2.0
+  print*, 'Finding SPH neighbours on regular grid'
+  print*, "----------------------------------------------------------------"
+  
+  ! Loop over all particles
+  
+  percent = 0.0
+  counter = 1.0
+  
+  do ielement = 1,nelement
+     
+     if(iphase(ielement)/=0) cycle
+     ! printing the extent to which the process is complete
+     percent = 100.0*REAL(ielement)/REAL(nelement)
+     
+     if(percent>counter)then
+        print*, counter,'% complete'
+        counter = counter +1.0
+     endif
+     
+     
+     ! Find all grid cells within tolerance*h of the particle
+     
+     range = tolerance*xyzmh(5,ielement)        
+     hi = xyzmh(5,ielement)
+     
+     ! Create list of all cells in range of the particle
+     ! And a list of all particles in these cells
+     
+     call find_particles_in_range(xyzmh(1,ielement),xyzmh(2,ielement),&
+          xyzmh(3,ielement), range)
+     
+     ! Test for neighbourship all particles in the particle list
+     
+     !print*, ielement, ncellrange, nelementiclelist
+     !$OMP PARALLEL &
+     !$OMP shared(nelementiclelist,particlelist,iphase,hi,ielement)&
+     !$OMP shared(xyzmh,nneigh,neighb) &
+     !$OMP private(k,jelement,hj,hmean,sep)
+     !$OMP DO SCHEDULE(runtime)
+     do k = 1,nelementiclelist
+        jelement = particlelist(k)
+        !print*,ielement, k,nelementiclelist, jelement
+        IF(ielement==jelement) cycle
+        IF(iphase(jelement)/=0) cycle
         
-              sep = (xyzmh(1,ielement) - xyzmh(1,jelement))**2 + &
-                  (xyzmh(2,ielement) - xyzmh(2,jelement))**2 + &
-                  (xyzmh(3,ielement) - xyzmh(3,jelement))**2 + tiny
-              sep = sqrt(sep)
-              !print*, xyzmh(:,ielement)
-              !print*, xyzmh(:,jelement)
-              !print*,ielement,jelement, member(ielement), member(jelement), hi, hj, sep/hmean
+        hj = xyzmh(5,jelement)
         
-              !	if particle j in neighbour sphere, then add to neighbour list
-              if(sep<2.0*hmean.and.nneigh(ielement)<neighmax) then
-                 !$OMP CRITICAL
-                 nneigh(ielement) = nneigh(ielement) + 1
-                 neighb(ielement,nneigh(ielement)) = jelement
-                 !$OMP END CRITICAL
-              endif
+        if(ielement/=jelement) then
+           
+           hmean = (hi + hj)/2.0
+           
+           sep = (xyzmh(1,ielement) - xyzmh(1,jelement))**2 + &
+                (xyzmh(2,ielement) - xyzmh(2,jelement))**2 + &
+                (xyzmh(3,ielement) - xyzmh(3,jelement))**2 + tiny
+           sep = sqrt(sep)
+           !print*, xyzmh(:,ielement)
+           !print*, xyzmh(:,jelement)
+           !print*,ielement,jelement, member(ielement), member(jelement), hi, hj, sep/hmean
+           
+           !	if particle j in neighbour sphere, then add to neighbour list
+           if(sep<2.0*hmean.and.nneigh(ielement)<neighmax) then
+              !$OMP CRITICAL
+              nneigh(ielement) = nneigh(ielement) + 1
+              neighb(ielement,nneigh(ielement)) = jelement
+              !$OMP END CRITICAL
            endif
-           
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-        ! End loop over particles in cell
-        if(nneigh(ielement) < 20) then
-           print*, 'nneigh for particle ',ielement,' is ',nneigh(ielement), neighmax
-           print*, 'Particle type: ', iphase(ielement)
-           print*, 'Number of cells/particles tested ', ncellrange, nelementiclelist
-           !print*, 'xyzmh: ', xyzmh(:,ielement)
         endif
-        
         
      enddo
-     ! End of loop over all particles
-  
+     !$OMP END DO
+     !$OMP END PARALLEL
+     ! End loop over particles in cell
+     if(nneigh(ielement) < 20) then
+        print*, 'nneigh for particle ',ielement,' is ',nneigh(ielement), neighmax
+        print*, 'Particle type: ', iphase(ielement)
+        print*, 'Number of cells/particles tested ', ncellrange, nelementiclelist
+        !print*, 'xyzmh: ', xyzmh(:,ielement)
+     endif
      
-     ! write neighbours to file.
-     print*, 'Writing neighbours to file ', neighbours
      
-     call write_neighbours(neighbours,tolerance)
-     
-  endif
-  
-  ! Calculate mean and standard deviation of neighbour counts
-  meanneigh = sum(nneigh)/REAL(nelement)
-  sdneigh = 0.0
-  
-  !$OMP PARALLEL &
-  !$OMP shared(nneigh,meanneigh,nelement)&
-  !$OMP private(ielement) &
-  !$OMP reduction(+:sdneigh)
-  !$OMP DO SCHEDULE(runtime)
-  do ielement=1,nelement
-     sdneigh = sdneigh+(nneigh(ielement)-meanneigh)**2
   enddo
-  !$OMP END DO
-  !$OMP END PARALLEL
+  ! End of loop over all particles
   
-  sdneigh = sqrt(sdneigh/REAL(nelement))
   
-  print*, 'Mean neighbour number is ', meanneigh
-  print*, 'Standard Deviation: ', sdneigh
-  neighcrit = meanneigh-5.0*sdneigh
-  
-  print*, 'Clumps created only if neighbour number greater than ', neighcrit
   
   return
 end subroutine neighbours_grid
@@ -167,7 +114,7 @@ SUBROUTINE find_particles_in_range(xpart,ypart,zpart,range)
 ! Subroutine finds all grid cells within a distance hpart from the co-ordinates
 ! xpart, ypart, zpart, and lists all particles in those cells
 
-  use sphdata, only:nelement
+  use tachedata, only:nelement
   use sphneighbourdata
 
   IMPLICIT NONE

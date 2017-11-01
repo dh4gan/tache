@@ -1,6 +1,7 @@
 subroutine initial
+!
 ! Subroutine reads in parameter file
-! and sets up simulation
+! and sets up analysis
 !
 
 use tachedata
@@ -9,9 +10,6 @@ implicit none
 
 integer :: ifile
 character(3) :: num
-
-
-
 
 ! Get input parameters and set up header:
   print*, " "
@@ -35,8 +33,8 @@ character(3) :: num
   read(10,*) filetype ! SPH, grid or mesh
   read(10,*) fileformat ! sphNG_wkmr, sphNG_iab
   read(10,*) tensorchoice ! tidal, velocity
-  read(10,*) threshold ! 
   read(10,*) splitdump ! (y/n)
+  read(10,*) threshold
 
   close(10)
 
@@ -68,15 +66,17 @@ character(3) :: num
   allocate(potfile(nfiles))
   allocate(eigenfile(nfiles))
   allocate(vectorfile(nfiles))
+  allocate(memberfile(nfiles))
 
   do ifile=1,nfiles
-     write(num, '(I4.3)')ifile
+     write(num, '(I3.3)') ifile
 
      write(gravfile(ifile),'("grav",A3)') num
      write(potfile(ifile), '("pot",A3)') num
      
      write(eigenfile(ifile), '("eig",A1,A3)') tensorchar,num
      write(vectorfile(ifile),'("evc",A1,A3)') tensorchar,num    
+     write(memberfile(ifile), '("class",A1,A3)') tensorchar,num
 
   enddo
 

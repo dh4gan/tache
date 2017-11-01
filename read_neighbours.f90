@@ -2,7 +2,7 @@ SUBROUTINE read_neighbours(neighbourfile)
 ! Subroutine reads in a neighbours file
   use sphdata
   use sphneighbourdata
-	use tachedata,only: neigen
+	use tachedata,only: neigen,nelement
   implicit none
 
   integer :: i,j,neighcheck, tolcheck

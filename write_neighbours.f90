@@ -3,6 +3,8 @@ SUBROUTINE write_neighbours(neighbourfile)
 
 use sphdata
 use sphneighbourdata
+use tachedata, only: nelement
+
 implicit none
 
  integer :: i,j

@@ -6,6 +6,7 @@ SUBROUTINE calc_grav_brute
   use sphdata
   use sphneighbourdata
   use sphkerneldata
+  use tachedata, only:nelement
 
   implicit none
 

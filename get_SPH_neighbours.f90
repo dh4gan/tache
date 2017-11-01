@@ -36,6 +36,8 @@ else
    ! 2. If no neighbour file found, then we must generate the list
    !***************************************************************
 
+   print*, 'No neighbour file found, generating from scratch'
+
    allocate(nneigh(nelement))
    allocate(neighb(nelement,neighmax))
    nneigh(:) = 0
@@ -55,7 +57,7 @@ else
       if(iphase(ielement)==0) neigen = neigen +1
      
       do j=1,3
-         IF(abs(xyzmh(j,ielement))> rmax(j)) xmax = abs(xyzmh(1,ielement))
+         IF(abs(xyzmh(j,ielement))> rmax(j)) rmax(j) = abs(xyzmh(j,ielement))
       enddo
 
       hmean = hmean + xyzmh(5,ielement)
@@ -87,7 +89,7 @@ else
   
       print*, "-----------------------------------------------"
       print*, 'Creating Neighbour Lists, nelement: ',nelement		
-      CALL neighbours_octree(filename(ifile))
+      CALL neighbours_octree
       
       print*, 'Neighbour lists created'
       print*, "-----------------------------------------------"			
@@ -96,20 +98,20 @@ else
 
         print*, "-----------------------------------------------"
         print*, 'Building regular grid'
-        CALL make_grid_sphdata
+        CALL make_grid_sphdata(hmean)
 
         !	Use grid to find neighbours    
   
         print*, "-----------------------------------------------"
         print*, 'Creating Neighbour Lists from grid, nelement: ',nelement		
-        CALL neighbours_grid(filename(ifile))
+        CALL neighbours_grid
 
         print*, 'Neighbour lists created'
         print*, "-----------------------------------------------"
 
      ELSE
         print*, 'Finding neighbours by brute force'
-        CALL neighbours_brute(filename(ifile))
+        CALL neighbours_brute
      ENDIF
 
      ! Write the neighbour data to file

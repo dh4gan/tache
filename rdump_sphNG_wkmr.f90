@@ -7,6 +7,7 @@
 ! PJC 08/05/2008
 !----------------------------------------------------------------------
       use sphdata
+      use tachedata, only: nelement
         
       implicit none
       integer(kind=4) :: int1,int2,itest1,itest2,itest3,itest4

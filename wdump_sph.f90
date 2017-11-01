@@ -45,7 +45,7 @@
 ! Write default integers
 	  number = 6	      
       write(10) number
-	  write(10) nelement,n1,n2,nreassign,naccrete,nkill
+	  write(10) npart,n1,n2,nreassign,naccrete,nkill
 
 ! Write in integers of size int*1, int*2, int*4, int*8
 	  number = 0
@@ -74,7 +74,7 @@
 	  write(10) number
 	   
 ! Write array type 1 header
-	  number8 = nelement
+	  number8 = npart
       nums(1) = 1
       nums(2) = 1
       nums(3) = 0
@@ -103,23 +103,23 @@
 		     	
 ! Write default integers!      integer,dimension(500001) :: testph
 
-      write(10) (isteps(i), i=1,nelement)
+      write(10) (isteps(i), i=1,npart)
 	
 ! Write integer*1s
-      write(10) (iphase(i), i=1,nelement)
+      write(10) (iphase(i), i=1,npart)
 
 	
 ! Write default reals
       do j = 1,5
-         write(10) (xyzmh(j,i), i=1,nelement)
+         write(10) (xyzmh(j,i), i=1,npart)
       enddo
       do j = 1,4
-         write(10) (vxyzu(j,i), i=1,nelement)
+         write(10) (vxyzu(j,i), i=1,npart)
       enddo
 	
 ! Write real*4s
-      write(10) (rho(i), i=1,nelement)
-      write(10) (dgrav(i), i=1,nelement)
+      write(10) (rho(i), i=1,npart)
+      write(10) (dgrav(i), i=1,npart)
 			 	
 !-------------------Type 2 array values---------------------------------
 
@@ -141,22 +141,10 @@
 
       close(10)
 
-      naccrete = 0	!	Specific to clumpfind 
       print*, '      - SPH dump file written'
-      print*, '      -',nelement,'particles in total'
-      print*, '      -',nelement-naccrete-nptmass,'gas particles active'
+      print*, '      -',npart,'particles in total'
+      print*, '      -',npart-naccrete-nptmass,'gas particles active'
       print*, ' '
-
-!	  print*, 'Deallocating Memory'
-
-!	Changes specific to clumpfind
-		      
-!	deallocate(iphase,isteps,iorig,isort)
-!	deallocate(xyzmh,vxyzu,rho,dgrav)
-
-!	deallocate(listpm,spinx,spiny,spinz)
-!	deallocate(angaddx,angaddy,angaddz)
-!	deallocate(spinadx,spinady,spinadz)
 	
 	print*, '      - complete'
       return

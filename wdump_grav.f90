@@ -1,6 +1,7 @@
       subroutine wdump_grav(gravfile,potfile)
 
       use sphdata
+      use tachedata, only: nelement
 
       implicit none
       integer :: i

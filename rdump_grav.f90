@@ -1,6 +1,7 @@
       subroutine rdump_grav(gravfile,potfile,rcheck)
 
       use sphdata
+      use tachedata, only:nelement
 
       implicit none
       integer :: ios,unit,rcheck,i

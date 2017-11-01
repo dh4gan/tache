@@ -24,6 +24,7 @@
 SUBROUTINE rdump_sphNG_iab(filename,rcheck, skip)
 
 use sphdata
+use tachedata,only: nelement
 
 implicit none 
 integer :: check, rcheck,skip
@@ -298,6 +299,7 @@ END SUBROUTINE rdump_sphNG_iab
   !Reads in a single block of data.
   SUBROUTINE read_sphng_block
     use sphdata
+    use tachedata, only: nelement
 
   IMPLICIT NONE
   
@@ -522,6 +524,7 @@ END SUBROUTINE rdump_sphNG_iab
   SUBROUTINE allocate_arrays
 
     use sphdata
+    use tachedata, only: nelement
 
   IMPLICIT NONE
   integer :: nalloc
@@ -566,6 +569,7 @@ END SUBROUTINE rdump_sphNG_iab
   
   SUBROUTINE allocate_arrays_RT
     use sphdata
+    use tachedata, only:nelement
   IMPLICIT NONE
   integer :: nalloc
   IF (contiguous .AND. nblocks > 1) THEN

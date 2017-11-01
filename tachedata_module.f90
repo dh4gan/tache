@@ -21,7 +21,7 @@ module tachedata
   real(kind=8) :: threshold
 
   ! Characters
-  character(8),parameter :: paramfile='tache.params'
+  character(12),parameter :: paramfile='tache.params'
   character(100) :: listfile, filetype,fileformat,tensorchoice
   character(1) :: splitdump, tensorchar
 
@@ -39,7 +39,11 @@ module tachedata
 
   character(1),parameter :: grav_calc_choice = 'b'
 
-  character(100),allocatable,dimension(:) :: filename,gravfile,potfile,eigenfile,vectorfile
+  ! When splitting SPH dump into constituents, recalculate element densities?
+  character(1),parameter :: density_recalc = 'n'
+
+  character(100),allocatable,dimension(:) :: filename,gravfile,potfile
+  character(100),allocatable,dimension(:) :: eigenfile,vectorfile,memberfile
 
 ! Logicals
 
@@ -49,6 +53,15 @@ module tachedata
 ! Integers
   ! Reals
   
+  integer,allocatable,dimension(:) :: class
+  integer,dimension(4) :: classnum
+
+  integer,parameter:: nclasses=4
+  character(4),dimension(nclasses) :: prefixes
+
+
+
+  integer,allocatable,dimension(:) :: eigenelement
   real,allocatable,dimension(:,:) :: eigenvalues
   real,allocatable,dimension(:,:,:) :: eigenvectors
   real, allocatable,dimension(:,:,:) :: tensor

@@ -1,4 +1,4 @@
-SUBROUTINE make_grid_sphdata
+SUBROUTINE make_grid_sphdata(hmean)
   ! Written 17/2/15 by dh4gan
   ! This subroutine makes a regular grid in x,y,z and 
   ! bins the particles accordingly
@@ -11,23 +11,26 @@ SUBROUTINE make_grid_sphdata
   ! icell = int((xi-xmin)/dgrid +1) = int((xi+xmax)/dgrid +1)
   ! (and so on for jcell, kcell (y,z)
 
-  USE sphdata
-  USE sphneighbourdata
+  use sphdata
+  use sphneighbourdata
+  use tachedata,only:nelement
   
-  IMPLICIT NONE  
+  implicit none
 
   integer :: ielement, icell,jcell,kcell
   integer :: thiscell, celltot, neigen
 
-  real :: hmean,dmax
+  real,intent(in) :: hmean
+  real :: dmax
 
   
   ! Set up uniform grid in x,y,z 
   
   dmax = maxval(rmax)
 
-  dgridmin = dmax/real(ngridmax)
-  
+  dgridmin = 2.0*dmax/real(ngridmax)
+  print*, 'Minimum grid spacing: ', dgridmin,dmax,ngridmax
+
   ! Grid spacing
   dgrid = 2.0*hmean
   

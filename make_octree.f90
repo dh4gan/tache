@@ -2,7 +2,10 @@ SUBROUTINE make_octree(sphfile)
 
   USE sphdata	
   USE sphneighbourdata
+  use tachedata,only: nelement
+
   IMPLICIT NONE  
+
   integer :: ipar,n_open,binlog,ic,ielement,j,l
   integer :: flag,testnode,maxcheck, n_leaf
   integer,allocatable, dimension(:) :: ibin,counter, is_leaf

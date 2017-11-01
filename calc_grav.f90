@@ -4,6 +4,7 @@ SUBROUTINE calc_grav
 use sphdata
 use sphneighbourdata
 use sphkerneldata
+use tachedata, only: nelement
 
 implicit none
 

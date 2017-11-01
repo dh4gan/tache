@@ -13,7 +13,6 @@ subroutine write_eigendata(ifile)
 
   integer :: i,j,k,counter
 
-  integer,allocatable, dimension(:) :: eigenelement
   real, allocatable, dimension (:,:,:) :: eigenvecbin
   real, allocatable, dimension(:,:) :: eigenbin
   real, allocatable, dimension(:) :: xbin, ybin, zbin

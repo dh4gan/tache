@@ -1,4 +1,4 @@
-subroutine neighbours_brute(sphfile)
+subroutine neighbours_brute
   ! Subroutine finds nearest neighbours in radius 2h, using the octree
   ! h already defined for all particles
   ! This counts accreted particles and pointmasses too
@@ -10,31 +10,9 @@ subroutine neighbours_brute(sphfile)
   real :: hi,hj, hmean, sep,percent
   real, parameter :: tiny = 1.0e-34
 
-  character(7) :: sphfile
-  character(18) :: neighbours
-
-  logical :: existneigh
-
-   ! Check if a neighbourhood file currently exists.
-  print*, "-----------------------------------------------"
-  print*, 'Searching for neighbourhood fileset'
-  write(neighbours,'("neighbours_",A7)') sphfile
-
-  ! Check if file is available
-  INQUIRE(file=neighbours,exist=existneigh)
-
-  IF(existneigh.eqv..true.) then
-     print*, 'Neighbourhood file found: reading'
-    call read_neighbours(neighbours)
-  ENDIF
-
-IF(existneigh.eqv..false.) then
   print*, 'Beginning brute force search for neighbours'
   print*, "------------------------------------------------------------------------"
 
-  ! Parallelisable:
-  ! Shared: iphase, xyzmh, nneigh, neighb, neighmax, tiny
-  ! Private: i,j,hi,hj,hmean,sep
   !$OMP PARALLEL &
   !$OMP shared(nelement, iphase,xyzmh, nneigh,neighb) &
   !$OMP private(i,j,hi,hj,hmean,sep)
@@ -77,12 +55,6 @@ IF(existneigh.eqv..false.) then
   !$OMP END DO
   !$OMP END PARALLEL
 
-
-  ! Write the neighbour data to file
-  call write_neighbours(neighbours)
-
-  ! End loop over all particles
-endif
 
   return
   end subroutine neighbours_brute

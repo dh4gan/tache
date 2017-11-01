@@ -12,7 +12,7 @@ module sphdata
 
   !-------------------Single values---------------------------------------
   ! Integers
-  integer :: nelement,naccrete,n1,n2,nreassign,nkill,nblocks
+  integer :: npart,naccrete,n1,n2,nreassign,nkill,nblocks
 
   ! Can't allocate sink arrays at runtime for MPI as we don't store nsinktotal
   integer, parameter :: nptmax = 1000 
