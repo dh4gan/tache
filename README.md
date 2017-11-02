@@ -14,11 +14,11 @@ Features:
 * Computes either the (symmetric) velocity shear tensor or tidal tensor, and their eigenvalues/eigenvectors
 * Classifies fluid elements by number of "positive" eigenvalues
 * Permits decomposition of snapshots into classified components
+* Python plotting scripts
 
 Features in Development:
 -----------------------
 * Spiral Fitting Algorithms (Forgan et al, in review)
-* Python plotting scripts
 
 
 Future Features/Wishlist:
