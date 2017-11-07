@@ -46,7 +46,7 @@ PROGRAM tache
      call write_eigendata(ifile)
 
      ! If we want to split dump into tensor classified components, do it here
-     if(splitdump=='y') call write_splitdump
+     if(splitdump) call write_splitdump(ifile)
 
      ! Deallocate memory ready for the next run
      call deallocate_memory

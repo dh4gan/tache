@@ -11,6 +11,7 @@ integer :: ifile
 real :: percentcount
 real,dimension(3,3) :: tensor_element
 
+print*, '-------------'
 ! If this is an SPH file, require neighbour lists to compute derivatives
 if(filetype=='SPH') then
 
@@ -31,6 +32,7 @@ if(filetype=='SPH') then
       call element_percent_complete(ielement,nelement,percentcount,10.0)
       
       tensor_element(:,:) =0.0
+
       call calc_velocityshear_tensor(ielement,tensor_element)
       tensor(:,:,ielement) = tensor_element(:,:)
       

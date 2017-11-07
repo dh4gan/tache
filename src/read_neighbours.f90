@@ -5,7 +5,8 @@ SUBROUTINE read_neighbours(neighbourfile)
 	use tachedata,only: neigen,nelement
   implicit none
 
-  integer :: i,j,neighcheck, tolcheck
+  integer :: i,j,neighcheck
+  real :: tolcheck
   character(18)::neighbourfile
 
  
@@ -44,9 +45,6 @@ SUBROUTINE read_neighbours(neighbourfile)
 
  print*, 'Mean neighbour number is ', meanneigh
  print*, 'Standard Deviation: ', sdneigh
- neighcrit = meanneigh-5.0*sdneigh
-     
- print*, 'Clumps created only if neighbour number greater than ', neighcrit
-
+ neighcrit = meanneigh-5.0*sdneigh    
 
 END SUBROUTINE read_neighbours

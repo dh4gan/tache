@@ -14,7 +14,7 @@
       integer(kind=8) :: number8
       integer,intent(inout) :: rcheck
       real :: r1
-      character(7),intent(in) :: filename
+      character(100),intent(in) :: filename
 
 ! Standard integers for write:
       int1 = 690706
@@ -24,7 +24,7 @@
 
 		    
 ! Open file to write to:
-      print*, 'Writing SPH file    : ', filename
+      print*, 'Writing SPH file    : ', trim(filename)
       open(10,file=filename,status='unknown',iostat=check,&
            form='unformatted',action='write')
 

@@ -23,8 +23,9 @@ module tachedata
   ! Characters
   character(12),parameter :: paramfile='tache.params'
   character(100) :: listfile, filetype,fileformat,tensorchoice
-  character(1) :: splitdump, tensorchar
-
+  character(1) :: splitdumpchoice, tensorchar
+  
+  
   ! Parameter decides how neighbours are calculated:
   ! 'g' - particle neighbours found using regular grid
   ! 'o' - neighbours found by building an octree (O(N log N))
@@ -46,7 +47,7 @@ module tachedata
   character(100),allocatable,dimension(:) :: eigenfile,vectorfile,memberfile
 
 ! Logicals
-
+  logical :: splitdump
 
 		      
 !-------------------Array values----------------------------------------

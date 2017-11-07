@@ -35,10 +35,12 @@ endif
 
 ! Is splitdump y/n?
 
-if(splitdump/='y' .and. splitdump/='Y' .and. splitdump/='N' .and. splitdump/='n') then
+if(splitdumpchoice=='y' .or. splitdumpchoice=='Y') splitdump = .true.
+
+if(splitdumpchoice/='y' .and. splitdumpchoice/='Y' .and. splitdumpchoice/='N' .and. splitdumpchoice/='n') then
    print*, 'WARNING: splitdump option must be (y/n)'
    print*, 'Assuming splitdump=n'
-   splitdump='n'
+   splitdump=.false.
 endif
 
 

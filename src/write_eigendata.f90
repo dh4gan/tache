@@ -55,7 +55,7 @@ subroutine write_eigendata(ifile)
      
      counter = counter +1
   enddo
-  
+
   open(27,file=eigenfile(ifile), status='unknown',form='unformatted')
   write(27) neigen
   write(27) (eigenelement(i),i=1,neigen)
@@ -76,7 +76,7 @@ subroutine write_eigendata(ifile)
   write(27) (eigenvecbin(3,1:3,i),i=1,neigen)
 
 
-  deallocate(xbin,ybin,zbin,eigenbin,eigenelement, eigenvecbin)
-
+  deallocate(xbin,ybin,zbin,eigenbin, eigenvecbin)
+  if(splitdump.eqv..false.) deallocate(eigenelement) 
 
 end subroutine write_eigendata

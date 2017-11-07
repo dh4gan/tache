@@ -1,6 +1,6 @@
 filelist.txt	List of filenames to analyse
 SPH		Simulation type
 sphNG_wkmr	File format
-velocity	Tensor choice (tidal/velocity)
+tidal		Tensor choice (tidal/velocity)
 y		Split dump into classified components? (y/n)
 1.0e-6		Eigenvalue threshold for classification (if splitting dump)

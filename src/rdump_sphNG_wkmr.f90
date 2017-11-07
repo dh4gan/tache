@@ -128,6 +128,13 @@
       allocate(rho(nelement))
       allocate(dgrav(nelement))
 		      
+      allocate(isort(nelement))
+      allocate(iorig(nelement))
+
+      do i=1,nelement
+         isort(i) = i
+         iorig(i) = i
+      enddo
 	
 ! Read default integers!      integer,dimension(500001) :: testph
 

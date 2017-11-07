@@ -17,6 +17,10 @@ real :: hmean
 character(100) :: neighbourfile
 logical :: existneigh
 
+
+   allocate(nneigh(nelement))
+   allocate(neighb(nelement,neighmax))
+
 !****************************************************************
 ! 1. Test to see if neighbour file exists: if it does, no need to
 ! calculate neighbours
@@ -28,7 +32,7 @@ inquire(file=neighbourfile,exist = existneigh)
 
 if(existneigh.eqv..true.) then
 
-   print*, 'Neighbour file',neighbourfile, ' found: reading'
+   print*, 'Neighbour file ',TRIM(neighbourfile), ' found: reading'
    call read_neighbours(neighbourfile)
 
 else
@@ -38,16 +42,13 @@ else
 
    print*, 'No neighbour file found, generating from scratch'
 
-   allocate(nneigh(nelement))
-   allocate(neighb(nelement,neighmax))
+
    nneigh(:) = 0
    neighb(:,:) = 0
 
     ! Find maximum and minimum values for all coordinates
    rmax(:) = 0.0
 
-   allocate(isort(nelement))
-   allocate(iorig(nelement))
 
    do ielement=1,nelement
       ! rho(ielement) = xyzmh(4,ielement)/(xyzmh(5,ielement)**3) ! DEBUG LINE

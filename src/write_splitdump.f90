@@ -31,16 +31,23 @@ character(100) :: classfile
 
 print*, 'Classifying dump by eigenvalue: threshold=',threshold
 
+allocate(class(nelement))
+
 class(:) = -1
 classnum(:) = 0
 
 do i=1,neigen
    ielement = eigenelement(i)
    eigensingle(:) = eigenvalues(:,i)
+  
    CALL classify_by_eigenvalues(class(ielement), eigensingle,threshold)
 
 enddo
 
+print*, 'Classification complete'
+
+deallocate(eigenelement)
+print*, 'Array deallocated ',memberfile(1),ifile
 
 if(filetype=='SPH') then
 
@@ -48,7 +55,9 @@ if(filetype=='SPH') then
    ! 2a. Write classes to single file (for particle tracking)
    !************************************************************
 
-   print*, 'Writing all particle classifications to file ', TRIM(memberfile(ifile))
+   print*, 'Writing all particle classifications to file ', &
+        TRIM(memberfile(ifile))
+
    open(12,file=memberfile(ifile),form='unformatted')
 
    write(12) nelement
@@ -62,7 +71,7 @@ if(filetype=='SPH') then
    ! 2b. Write to separate SPH dumps
    !*************************************************************
 
-   print*, 'Now writing different classifications to separate SPH files'
+   print*, 'Now writing different classifications to separate SPH files '
 
    !	Write all SPH data to holding array
 
@@ -87,7 +96,6 @@ if(filetype=='SPH') then
    !allocate(spinadxhold(nptmass))
    !allocate(spinadyhold(nptmass))
    !allocate(spinadzhold(nptmass))
-   
    
    isorthold(:) = isort(:)
    iphasehold(:) = iphase(:)		
