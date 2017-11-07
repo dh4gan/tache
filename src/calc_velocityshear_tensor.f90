@@ -5,13 +5,15 @@ use sphdata
 use sphneighbourdata
 use sphkerneldata
 
+implicit none
+
 real, dimension(3,3) :: tensor
 
 integer :: ielement, j,k, imat, jmat
 
 real, dimension(3) :: dr
 
-real :: vmag
+real :: vmag,grpm,rhoj,v
 
 do k = 1, nneigh(ielement)
 
@@ -23,6 +25,8 @@ do k = 1, nneigh(ielement)
         hmean41 = hmean21*hmean21
         pmassj = xyzmh(4,j)
         rhoj = rho(j)
+
+       
 
     ! Separation of particles
         do jmat = 1,3
@@ -47,7 +51,9 @@ do k = 1, nneigh(ielement)
         endif
 
         IF(index1 < 0) THEN
+        
            print*, j,ielement, index, itable, rij2, v2,dvtable, v2/dvtable, index1
+
         endif
         IF (v > radkernel) cycle
      

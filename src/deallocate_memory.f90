@@ -8,8 +8,9 @@ implicit none
 
    print*, 'Deallocating Memory'
 
-     deallocate(nneigh,neighb,n_occ)
+     deallocate(nneigh,neighb)
      if(allocated(occ)) deallocate(occ)
+     if(allocated(n_occ)) deallocate(n_occ)
 
      print*, 'Tree memory deallocated'
 
