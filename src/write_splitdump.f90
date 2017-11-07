@@ -38,7 +38,7 @@ classnum(:) = 0
 
 do i=1,neigen
    ielement = eigenelement(i)
-   eigensingle(:) = eigenvalues(:,i)
+   eigensingle(:) = eigenvalues(:,ielement)
   
    CALL classify_by_eigenvalues(class(ielement), eigensingle,threshold)
 
