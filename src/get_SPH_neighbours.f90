@@ -15,7 +15,7 @@ integer,intent(in) :: ifile
 integer :: j
 real :: hmean
 character(100) :: neighbourfile
-logical :: existneigh
+logical :: existneigh,existgrav
 
 
    allocate(nneigh(nelement))
@@ -118,13 +118,26 @@ else
      ! Write the neighbour data to file
      call write_neighbours(neighbourfile)
 
-     if(tensorchoice=='tidal') then
-        print*, 'Computing tidal tensor - require gravitational force'
+
+  endif
+
+  if(tensorchoice=='tidal') then
+     print*, 'Computing tidal tensor - require gravitational force'
         
-        ! TODO - check if gravitational force file exists
+     inquire(file=gravfile(ifile),exist=existgrav)
+
+     if(existgrav.eqv..true.) then
+
+        print*, 'Gravitational force file ', trim(gravfile(ifile)), 'found'
+        print*, 'Reading'
+
+        !TODO Read gravitational force and potential files
+
+     else
+        
     
         IF(use_octree_grid=='o' .and. grav_calc_choice=='o') THEN
-
+           
            print*, 'Calculating Gravitational Force and Potential Using Octree'
            call calc_grav_tree
 
@@ -143,7 +156,7 @@ else
            call calc_grav_brute
         endif
 
-    
+     endif
         !***********************************
         ! 4. Write to File
         !***********************************
@@ -151,6 +164,5 @@ else
         ! Write gravity data to file
         call wdump_grav(ifile)
      endif
-  endif
 
 end subroutine get_SPH_neighbours

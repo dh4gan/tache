@@ -33,7 +33,12 @@ if(filetype=='SPH') then
       
       tensor_element(:,:) =0.0
 
-      call calc_velocityshear_tensor(ielement,tensor_element)
+      if(tensorchoice=='velocity') then
+         call calc_velocityshear_tensor(ielement,tensor_element)
+      else if(tensorchoice=='tidal') then
+         call calc_tidal_tensor(ielement,tensor_element)
+      endif
+
       tensor(:,:,ielement) = tensor_element(:,:)
       
    enddo
