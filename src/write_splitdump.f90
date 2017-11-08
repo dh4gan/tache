@@ -122,7 +122,7 @@ if(filetype=='SPH') then
 
    do iclass=1,nclasses
           
-      classfile=trim(filename(ifile))//'_'//trim(prefixes(iclass))
+      classfile=trim(filename(ifile))//trim(tensorchar)//'_'//trim(prefixes(iclass))
 
       npart = classnum(iclass)
       
