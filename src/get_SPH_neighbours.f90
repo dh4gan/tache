@@ -12,7 +12,7 @@ implicit none
 
 integer,intent(in) :: ifile
 
-integer :: j
+integer :: j,check
 real :: hmean
 character(100) :: neighbourfile
 logical :: existneigh,existgrav
@@ -128,13 +128,20 @@ else
 
      if(existgrav.eqv..true.) then
 
-        print*, 'Gravitational force file ', trim(gravfile(ifile)), 'found'
+        print*, 'Gravitational force file ', trim(gravfile(ifile)), ' found'
         print*, 'Reading'
 
         !TODO Read gravitational force and potential files
 
+        check = 0
+        call rdump_grav(gravfile(ifile),potfile(ifile),check)
+        if(check==1) then
+           print*, 'Error in reading gravity files'
+           STOP
+        endif
+
      else
-        
+        print*, 'Gravitational force file ',trim(gravfile(ifile)),' not found'
     
         IF(use_octree_grid=='o' .and. grav_calc_choice=='o') THEN
            
@@ -155,8 +162,6 @@ else
            print*, 'gravity calculation choice: ', grav_calc_choice
            call calc_grav_brute
         endif
-
-     endif
         !***********************************
         ! 4. Write to File
         !***********************************
@@ -164,5 +169,6 @@ else
         ! Write gravity data to file
         call wdump_grav(ifile)
      endif
+  endif
 
 end subroutine get_SPH_neighbours

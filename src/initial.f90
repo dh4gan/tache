@@ -9,8 +9,7 @@ implicit none
 
 
 integer :: ifile
-character(3) :: num
-character(100) :: suffix
+character(100) :: suffix,eigensuffix
 
 ! Get input parameters and set up header:
   print*, " "
@@ -71,16 +70,15 @@ character(100) :: suffix
 
   do ifile=1,nfiles
 
-     write(suffix,'(A1,"_",A)'),tensorchar,trim(filename(ifile))
+     write(suffix, '("_",A)'),trim(filename(ifile))
+     write(eigensuffix,'(A1,"_",A)'),tensorchar,trim(filename(ifile))
 
-     write(num, '(I3.3)') ifile
-
-     write(gravfile(ifile),'("grav",A3)') num
-     write(potfile(ifile), '("pot",A3)') num
+     write(gravfile(ifile),'("gravforce",A)') trim(suffix)
+     write(potfile(ifile), '("gravpotential",A)') trim(suffix)
      
-     write(eigenfile(ifile), '("eig",A)') trim(suffix)
-     write(vectorfile(ifile),'("evc",A1,"_",A)') tensorchar,trim(filename(ifile)    )
-     write(memberfile(ifile), '("class",A1,"_",A)') tensorchar,trim(filename(ifile))
+     write(eigenfile(ifile), '("eigenvalues",A)') trim(eigensuffix)
+     write(vectorfile(ifile), '("eigenvectors",A)')trim(eigensuffix)
+     write(memberfile(ifile), '("tensorclass",A)') trim(eigensuffix)
 
   enddo
 

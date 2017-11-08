@@ -3,4 +3,4 @@ SPH		Simulation type
 sphNG_wkmr	File format
 tidal		Tensor choice (tidal/velocity)
 y		Split dump into classified components? (y/n)
-1.0e-6		Eigenvalue threshold for classification (if splitting dump)
+1.0e-7		Eigenvalue threshold for classification (if splitting dump)

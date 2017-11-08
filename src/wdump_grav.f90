@@ -5,8 +5,7 @@
 
       implicit none
       integer :: i
-      character(7) :: gravfile
-      character(6) :: potfile
+      character(100) :: gravfile,potfile
 
 ! Open and write gravity file
 

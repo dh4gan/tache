@@ -6,8 +6,8 @@
       implicit none
       integer :: ios,unit,rcheck,i
       integer(kind=1),allocatable,dimension(:) :: testph
-      character(7) :: gravfile
-      character(6) :: potfile
+      character(100) :: gravfile
+      character(100) :: potfile
 
 ! Set unit value!
       unit = 1
