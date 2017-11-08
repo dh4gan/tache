@@ -24,7 +24,8 @@ implicit none
      if(allocated(alphaMM)) deallocate(alphaMM)
      if(allocated(gradh)) deallocate(gradh)
      if(allocated(gradhsoft)) deallocate(gradhsoft)
-     deallocate(gravxyz,poten)
+
+     if(tensorchoice=='tidal') deallocate(gravxyz,poten)
 
      print*, 'SPH memory deallocated'
 
