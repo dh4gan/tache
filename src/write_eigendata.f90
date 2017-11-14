@@ -15,7 +15,7 @@ subroutine write_eigendata(ifile)
 
   real, allocatable, dimension (:,:,:) :: eigenvecbin
   real, allocatable, dimension(:,:) :: eigenbin
-  real, allocatable, dimension(:) :: xbin, ybin, zbin
+  real, allocatable, dimension(:) :: xbin, ybin, zbin, mbin, rhobin
   
 
   print*, '----------------------'
@@ -31,6 +31,8 @@ subroutine write_eigendata(ifile)
   allocate(xbin(neigen))
   allocate(ybin(neigen))
   allocate(zbin(neigen))
+  allocate(rhobin(neigen))
+  allocate(mbin(neigen))
   allocate(eigenbin(3,neigen))
   allocate(eigenvecbin(3,3,neigen))
   allocate(eigenelement(neigen))
@@ -46,6 +48,9 @@ subroutine write_eigendata(ifile)
      xbin(counter) = xyzmh(1,ielement)
      ybin(counter) = xyzmh(2,ielement)
      zbin(counter) = xyzmh(3,ielement)
+     rhobin(counter) = rho(ielement)
+     mbin(counter) = xyzmh(4,ielement)
+
      do k=1,3
         eigenbin(k,counter) = eigenvalues(k,ielement)
         do j=1,3
@@ -65,6 +70,8 @@ subroutine write_eigendata(ifile)
   write(27) (eigenbin(1,i), i=1,neigen)
   write(27) (eigenbin(2,i), i=1,neigen)     
   write(27) (eigenbin(3,i), i=1,neigen)
+  write(27) (rhobin(i), i =1,neigen)
+  write(27) (mbin(i),i=1,neigen)
   close(27)
   
   ! Now write the eigenvectors to file
