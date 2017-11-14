@@ -24,15 +24,12 @@ integer :: skip,check,jmax,ispiral
 integer :: i,ipart,jpart,n,k
 integer :: start,finish
 
-real :: rhomax,percent,xpercentile, angcrit,pos_ang
-integer :: ipercentile
-real :: ri,rj,rjmax,D,mindist,rpart,totmass
+real :: rhomax,percent
+real :: ri,rj,rjmax
 
-integer, allocatable, dimension(:) :: isort
 real,dimension(3) :: xcom,vcom
 
-
-
+logical :: skipdump
 
 ! Initialise parameters
 call initial
@@ -43,7 +40,7 @@ do ifile=1,nfile
    ! 1. Read in eigenvalue file (x,y,z,rho,mass,eigenvalues)
    !    And extract spiral-like elements
    ! *********************************************************
-   call extract_spiral_elements(filename,skipdump,spiralclass,threshold)
+   call extract_spiral_elements(eigenfile(ifile),skipdump,spiralclass,threshold)
 
    if(skipdump.eqv..true.) cycle
 
@@ -69,7 +66,6 @@ do ifile=1,nfile
 
         i = isort(npart-ipart+1)
 
-        if(iphase(i)/=0) cycle
         ! If we've already tested this particle, then cycle back
         if(spiralmember(i)/=0) cycle
 
@@ -156,8 +152,8 @@ do ifile=1,nfile
 
         ! Remove all particles that were once part of this spiral from analysis
 
-        do ielement=1,nelement
-           if(spiralmember(ielement) == ispiral) spiralmember(ielement)==-1
+        do jelement=1,nelement
+           if(spiralmember(jelement) == ispiral) spiralmember(jelement)=-1
         enddo
         ispiral = ispiral-1
 
@@ -184,7 +180,7 @@ end program spiralfind
 
 !----------------------------------------------------
 !+
-! Adds separation of particles
+! Calculates separation of elements
 !+
 !-----------------------------------------------------
 subroutine calc_separation(i,j,r)
@@ -237,7 +233,7 @@ end subroutine calc_origin_distance
 !+
 !-----------------------------------------------------
 subroutine calc_position_angle(i,j, ispiral,pos_ang)
-use sphgravdata,only:xyzmh
+
 use spiraldata
 
 implicit none
@@ -271,7 +267,7 @@ rcurrent(:) = rcurrent(:)/rcurrmag
 rnext(:) = 0.0
 rnextmag = 0.0
 do k=1,3
-   rnext(k) = xyzmh(k,j) - spirals(ispiral)%r(k,thisseg)
+   rnext(k) = xyz(k,j) - spirals(ispiral)%r(k,thisseg)
    rnextmag = rnextmag + rnext(k)*rnext(k)
 enddo
 

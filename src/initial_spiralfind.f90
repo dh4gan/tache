@@ -1,6 +1,6 @@
 subroutine initial
 !
-! Subroutine reads in parameter file
+! Subroutine reads in parameter file for spiralfind program
 ! and sets up analysis
 !
 
@@ -31,33 +31,27 @@ character(100) :: suffix,eigensuffix
 
   open(10,file=paramfile, status='old')
   read(10,*) listfile ! File containing list of eigenvalue files
-  read(10,*) fileformat ! sphNG_wkmr, sphNG_iab
-  read(10,*) tensorchoice ! tidal, velocity
+  read(10,*) spiralclass ! Which class of element is to be analysed
+  read(10,*) threshold ! Eigenvalue threshold for classification
   read(10,*) mindist ! Minimum distance from the origin
   read(10,*) D ! Linking length between spiral segments
-  read(10,*) xpercentile ! Limit search to this density percentile
+  read(10,*) xpercentile ! Limit search to this density percentile (%)
+  read(10,*) angcrit ! Maximum angle between segments before spiral broken (deg)
 
   close(10)
 
-  filetype = 'SPH'
-  fileformat = 'sphNG_wkmr'
+  angcrit = angcrit*pi/180.0
 
   call checksetup
-
-  ! Setup kernel interpolation tables if this is an SPH run
-  if(filetype=='SPH') call ktable
 
   ! Read listfile and generate array of filenames
 
   open(20, file=listfile, form='formatted')
-
   read(20,*) nfiles
 
   allocate(eigenfile(nfiles))
   do ifile=1,nfiles
      read(20,*) eigenfile(ifile)
   enddo
-
-  ! 
 
 end subroutine initial

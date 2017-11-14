@@ -27,7 +27,12 @@ integer, allocatable,dimension(:) :: eigenelement,isort,spiralmember
 real,allocatable,dimension(:) :: rho, mass
 real,allocatable,dimension(:,:) :: xyz, eigenvalues 
 
+character(100),allocatable,dimension(:) :: eigenfile
 
-! TODO - add input parameters here
+
+! Input parameters
+character(100) :: listfile
+integer :: spiralclass
+real :: mindist, D,xpercentile,threshold,angcrit
 
 END MODULE spiraldata
