@@ -3,6 +3,7 @@ SUBROUTINE deallocate_memory
 
 use sphdata
 use sphneighbourdata
+use tachedata, only: tensorchoice
 
 implicit none
 

@@ -52,9 +52,9 @@ OBJTACHE    = $(SRCTACHE:.f90=.o)
 # Sources for the spiralfind program
 #
 
-SRCSPIRAL = spiraldata_module.f90 tachedata_module.f90 \
-	 spiralfind.f90 checksetup_spiralfind.f90 \
-	classify_by_eigenvalue.f90 deallocate_memory.f90 \
+SRCSPIRAL = spiraldata_module.f90  \
+	 spiralfind.f90  \
+	classify_by_eigenvalue.f90  \
 	element_percent_complete.f90 \
 	extract_spiral_elements.f90 \
 	read_eigenvalue_file.f90 \

@@ -5,7 +5,7 @@ subroutine write_eigendata(ifile)
   !
 
   use tachedata
-  use sphdata, only: xyzmh,iunique,iphase
+  use sphdata, only: xyzmh,rho,iunique,iphase
 
   implicit none
 

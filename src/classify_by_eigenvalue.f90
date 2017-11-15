@@ -1,10 +1,11 @@
-SUBROUTINE classify_by_eigenvalues(classification, values)
+SUBROUTINE classify_by_eigenvalues(classification, values,)
 ! This subroutine compares three eigenvalues to a threshold, and determines
 ! how many eigenvalues exceed that threshold
 
 ! Classification = N_above +1  (+1 because fortran can't deal with zero array indices)
 
-use tachedata
+!use tachedata
+!TODO - make this usable for tache and spiralfind
 
 integer :: k,classification
 real,dimension(3) :: values
