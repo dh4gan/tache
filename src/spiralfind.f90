@@ -15,8 +15,7 @@ use spiraldata
 
 implicit none
 
-integer :: i,k
-integer :: ielement,jelement,ifile
+integer :: i,ielement,jelement,ifile
 integer :: jmax,ispiral
 
 real :: rhomax,percent,increment,pos_ang
@@ -25,7 +24,7 @@ real :: ri,rj,rjmax,rsep
 logical :: skipdump
 
 ! Initialise parameters
-call initial
+call read_parameters
 
 do ifile=1,nfiles
 
@@ -44,9 +43,9 @@ do ifile=1,nfiles
    ! 2.	Order elements by their density
    !**************************************
 
-   call sort_by_density(nelement,isort)
+   call sort_by_density
 
-   call apply_percentile_cut(xpercentile)
+   call apply_percentile_cut
 
    ispiral = 0
    percent = 0.0
@@ -163,8 +162,8 @@ do ifile=1,nfiles
 call write_spiralmember_data(eigenfile(ifile))
 
 ! Deallocate arrays ready for next loop
-call deallocate_memory
-deallocate(spiralmember)
+call deallocate_spiraldata_memory
+
 
 enddo ! End loop over all files
 

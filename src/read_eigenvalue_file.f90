@@ -1,20 +1,22 @@
-subroutine read_eigenvalue_file(filename,skipdump,n,xyz,rho,m,eigenvalues)
+subroutine read_eigenvalue_file(filename,skipdump,n,xyz,rho,mass,eigenvalues)
 
 implicit none
 
 character(100), intent(in):: filename
 logical,intent(inout) :: skipdump
-real, allocatable,dimension(:),intent(inout) :: rho,m
+integer, intent(inout) :: n
+real, allocatable,dimension(:),intent(inout) :: rho,mass
 real,allocatable,dimension(:,:),intent(inout) :: xyz,eigenvalues
 integer,allocatable,dimension(:) :: eigenelement
 
-logical::filexist
+integer :: i
+logical::fileexist
 
 skipdump=.false.
 
-inquire(file=filename,exist=filexist)
+inquire(file=filename,exist=fileexist)
 
-if(fileexist.eqv..false) then
+if(fileexist.eqv..false.) then
    print*, 'Skipping missing file ',trim(filename)
    skipdump=.true.
    return
@@ -30,19 +32,20 @@ allocate(eigenelement(n))
 
 allocate(xyz(3,n))
 allocate(rho(n))
+allocate(mass(n))
 allocate(eigenvalues(3,n))
 
 read(10) (eigenelement(i),i=1,n)
 
-read(10) (xyzmh(1,i), i=1,n)
-read(10) (xyzmh(2,i), i=1,n)
-read(10) (xyzmh(3,i), i=1,n)
+read(10) (xyz(1,i), i=1,n)
+read(10) (xyz(2,i), i=1,n)
+read(10) (xyz(3,i), i=1,n)
 
 read(10) (eigenvalues(1,i),i=1,n)
 read(10) (eigenvalues(2,i),i=1,n)
 read(10) (eigenvalues(3,i), i=1,n)
-read(10) (rho(i), i=1,n))
-read(10) (xyzmh(4,i), i=1,n)
+read(10) (rho(i), i=1,n)
+read(10) (mass(i), i=1,n)
 close(10)
 
 print*, 'Eigenvalue File Read complete '

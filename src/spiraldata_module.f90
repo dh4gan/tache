@@ -168,6 +168,58 @@ print '(A,3(es10.2,1X))', 'Centre of Mass: Position', xcom
 
 end subroutine calc_centre_of_mass
 
+subroutine sort_by_density
+  !
+  ! subroutine sorts elements in order of increasing density   
+  
+
+  implicit none
+
+  integer :: ielement
+
+  print*, 'Sorting elements by density'
+
+  allocate(isort(nelement))
+     
+   do ielement=1,nelement
+      isort(ielement) = ielement
+   enddo
+     
+   CALL sort2(nelement,rho,isort,nelement)
+
+   print*, 'Particles sorted by Density'
+   print*, "-----------------------------------------------"
+   
+end subroutine sort_by_density
+
+
+subroutine apply_percentile_cut
+!
+! Removes all but the top x% of sorted elements from the analysis
+!
+
+implicit none 
+
+integer :: i,ielement,ipercentile
+
+  ! Only consider the top x percent
+
+   print '(a,f5.1,a)', 'Only considering the top ',xpercentile,' density percentile'
+
+   ipercentile = int(xpercentile*real(nelement)/100.0)
+
+   print'(a,I7,a)', 'This constitutes ', ipercentile, ' elements'
+   
+   do ielement= ipercentile,nelement
+      i = isort(nelement-ielement+1)
+      spiralmember(i)=-1
+   enddo
+
+
+
+
+end subroutine apply_percentile_cut
+
 
 !----------------------------------------------------
 !+
@@ -337,5 +389,18 @@ close(10)
 
 end subroutine write_spiralmember_data
 
+!----------------------------------------
+!+
+! Deallocates spiraldata memory ready for next file
+!+
+!----------------------------------------
+subroutine deallocate_spiraldata_memory
+
+deallocate(eigenelement,eigenvalues)
+deallocate(xyz,rho,mass,isort)
+deallocate(spiralmember)
+
+
+end subroutine deallocate_spiraldata_memory
 
 END MODULE spiraldata

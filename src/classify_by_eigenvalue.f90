@@ -1,24 +1,30 @@
-SUBROUTINE classify_by_eigenvalues(classification, values,)
+SUBROUTINE classify_by_eigenvalues(classification,classnum, values,threshold)
+!--------------------------------------------------------------------------
 ! This subroutine compares three eigenvalues to a threshold, and determines
-! how many eigenvalues exceed that threshold
+! how many eigenvalues exceed that threshold (N_above +1)
+!
+! Classification = N_above +1  
+! (+1 because fortran can't deal with zero array indices)
+!---------------------------------------------------------------------------
+implicit none
 
-! Classification = N_above +1  (+1 because fortran can't deal with zero array indices)
-
-!use tachedata
-!TODO - make this usable for tache and spiralfind
-
-integer :: k,classification
+integer,intent(inout) :: classification
+real, intent(in) :: threshold
+real,dimension(4), intent(inout) :: classnum
 real,dimension(3) :: values
 
+integer :: k
 
 classification = 1
 
+! Find classification
 do k=1,3
    if(values(k)<threshold) then
       classification = classification +1
    endif
 enddo
 
+! Add to totals for each class
 classnum(classification) = classnum(classification)+1
 
 return

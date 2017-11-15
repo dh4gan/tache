@@ -70,7 +70,7 @@ tache:  $(OBJTACHE)
 	$(FC) $(FFLAGS) -o $@ $(OBJTACHE)
 
 spiralfind: $(OBJSPIRAL)
-	    $(FC) $(FFLAGS) -o -$@ $(OBJSPIRAL)
+	    $(FC) $(FFLAGS) -o $@ $(OBJSPIRAL)
 
 # Clean statements:
 clean: 

@@ -1,4 +1,4 @@
-subroutine extract_spiral_elements(filename,skipdump,spiralclass,threshold)
+subroutine extract_spiral_elements(filename,skipdump)
 !---------------------------------------------
 ! Written 14/11/17 by dh4gan
 ! This subroutine loads an eigenvalue file,
@@ -10,14 +10,25 @@ use spiraldata
 
 implicit none
 
+character(100), intent(inout) :: filename
+logical, intent(inout) :: skipdump
+
+real, allocatable,dimension(:,:) :: xyzfull,eigenvalfull
+real,allocatable,dimension(:) :: rhofull,mfull
+integer,allocatable,dimension(:) :: class
+integer,dimension(4) ::classnum
+
+integer :: i,ielement,counter,nfull
+
+real,dimension(3) :: eigensingle
+
+character(10), dimension(4) :: prefixes
+
 prefixes(1) = "cluster"
 prefixes(2) = "filament"
 prefixes(3) = "sheet"
 prefixes(4) = "void"
 
-
-real, allocatable,dimension(:,:) :: xyzfull,eigenvalfull
-real,allocatable,dimension(:) :: rhofull,mfull
 
 ! Read in full eigenvalue file
 
@@ -30,17 +41,13 @@ call read_eigenvalue_file(filename,skipdump,nfull,xyzfull,rhofull,mfull,eigenval
 
    do i=1,nfull
       eigensingle(:) = eigenvalfull(:,ielement)
-      CALL classify_by_eigenvalues(class(ielement), eigensingle,threshold)
-
-      ! Only want particles of given class
-
-      if(class(ielement)/=spiralclass) tested(ielement)=-1
-
+      CALL classify_by_eigenvalues(class(ielement), classnum,eigensingle,threshold)
    enddo
 
 print*, 'Classification complete'
 
-print*, 'Spiralfind will operate on ',classnum(spiralclass), ' ',trim(prefixes(spiralclass), ' elements' 
+print*, 'Spiralfind will operate on ',classnum(spiralclass), ' ',&
+     trim(prefixes(spiralclass)), ' elements' 
 
 nelement = classnum(spiralclass)
 
