@@ -1,0 +1,7 @@
+spirallist.txt	List of filenames to analyse
+1		Particle tensor class to analyse (1=clusters, 2=filaments)
+1.0e-6		Threshold for tensor classification
+10.0		Minimum distance from the origin
+7.0		Linking length between spiral segments
+30.0 		Density percentile cut
+90.0		Critical angle between spiral segments

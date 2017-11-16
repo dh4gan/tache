@@ -176,6 +176,7 @@ subroutine sort_by_density
   implicit none
 
   integer :: ielement
+  real,allocatable,dimension(:) :: rhohold
 
   print*, 'Sorting elements by density'
 
@@ -185,9 +186,18 @@ subroutine sort_by_density
       isort(ielement) = ielement
    enddo
      
-   CALL sort2(nelement,rho,isort,nelement)
+   rhohold = rho
 
-   print*, 'Particles sorted by Density'
+   print*,minval(rho),maxval(rho)
+   print*, rho(1:10)
+   print*, minval(isort),maxval(isort)
+   CALL sort2(nelement,rhohold,isort,nelement)
+   print*, minval(rho),maxval(rho)
+   print*, rho(1:10)
+   print*, minval(isort),maxval(isort)
+
+   deallocate(rhohold)
+   print*, 'Elements sorted by Density'
    print*, "-----------------------------------------------"
    
 end subroutine sort_by_density
@@ -361,8 +371,7 @@ write(spiralnum,'(I4.4)') ispiral
 
 spiralfile = trim(dumpfile)//'_spiral_'//trim(spiralnum)//'.dat'
 
-print*, dumpfile
-print*, 'Writing to file ', spiralfile
+print*, 'Writing to file ', trim(spiralfile),' : ',spirals(ispiral)%nseg, ' segments'
 
 open(10, file=spiralfile, status='unknown')
 

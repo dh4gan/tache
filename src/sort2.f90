@@ -1,7 +1,7 @@
-      SUBROUTINE sort2(n,arr,brr,nelement)
+      SUBROUTINE sort2(n,arr,brr,npart)
       
-      real(kind=4),dimension(nelement) ::  arr
-      integer, dimension(nelement) :: brr
+      real(kind=4),dimension(npart) ::  arr
+      integer, dimension(npart) :: brr
       integer, parameter :: M=7,NSTACK=50
       integer :: n,i,ir,j,jstack,k,l,istack(NSTACK)
       real :: a,b,temp

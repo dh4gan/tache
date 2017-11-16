@@ -10,7 +10,7 @@ implicit none
 
 integer,intent(inout) :: classification
 real, intent(in) :: threshold
-real,dimension(4), intent(inout) :: classnum
+integer,dimension(4), intent(inout) :: classnum
 real,dimension(3) :: values
 
 integer :: k

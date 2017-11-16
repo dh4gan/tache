@@ -39,6 +39,8 @@ do ifile=1,nfiles
    ! Find centre of mass for appropriate system origin
    call calc_centre_of_mass
 
+   allocate(spiralmember(nelement))
+   spiralmember(:) = 0
    !**************************************
    ! 2.	Order elements by their density
    !**************************************
@@ -48,7 +50,7 @@ do ifile=1,nfiles
    call apply_percentile_cut
 
    ispiral = 0
-   percent = 0.0
+   percent = 0.0  
 
    !***************************************
    ! 3. Begin friends of friends algorithm
@@ -64,13 +66,15 @@ do ifile=1,nfiles
 
         i = isort(nelement-ielement+1)
 
+        !print*, i, ielement,spiralmember(i), rho(i), maxval(rho)
+        !stop
         ! If we've already tested this particle, then cycle back
         if(spiralmember(i)/=0) cycle
 
         ! If we're too close to the origin, cycle
         call calc_origin_distance(i,ri,xcom)
         if(ri<mindist) then
-           spiralmember=-1
+           spiralmember(i)=-1
            cycle
         endif
 
