@@ -21,6 +21,7 @@ logical :: existneigh,existgrav
    allocate(nneigh(nelement))
    allocate(neighb(nelement,neighmax))
 
+print*, 'Determining SPH neighbours'
 !****************************************************************
 ! 1. Test to see if neighbour file exists: if it does, no need to
 ! calculate neighbours
@@ -170,5 +171,7 @@ else
         call wdump_grav(ifile)
      endif
   endif
+
+print*, '----------'
 
 end subroutine get_SPH_neighbours

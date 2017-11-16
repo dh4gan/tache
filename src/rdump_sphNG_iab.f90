@@ -312,22 +312,22 @@ END SUBROUTINE rdump_sphNG_iab
   
   print *, " "
   print *, " "
-  print *, "Reading block ", iblock
+  print *, "   Reading block ", iblock
   
   read(10) number8, nums(1:8)
-  print *, nelementtot, nblocks, iblock, number8, number8*nblocks
+  !print *, nelementtot, nblocks, iblock, number8, number8*nblocks
   nelement = number8
   nelementblocks(iblock) = nelement
   
-  print *, "Block contains ", nelement, "particles, current icount ", icount
-  print *, "nums ", nums(1:8)
+  print *, "   Block contains ", nelement, "particles, current icount ", icount
+  !print *, "nums ", nums(1:8)
   
   read(10) number8, numssink(1:8)
   nptmass = number8
-  print *, "numssink ", numssink(1:8)
+  !print *, "numssink ", numssink(1:8)
   IF (numberarray == 3) THEN
     read(10) number8, numsRT(1:8)
-    print *, "numsRT ", numsRT(1:8)
+   ! print *, "numsRT ", numsRT(1:8)
   END IF
   
   ic1 = icount + 1
@@ -344,7 +344,7 @@ END SUBROUTINE rdump_sphNG_iab
   
   IF (tagged) read(10) !skip tag
   read(10) isteps(icount+1:icount+nelement)
-  print *, "isteps: ", isteps(ic1:ic3)
+  !print *, "isteps: ", isteps(ic1:ic3)
   IF (nums(1) >= 2) THEN
     IF (tagged) read(10) !skip tag
     read(10) !skip reading listinactive
@@ -356,56 +356,56 @@ END SUBROUTINE rdump_sphNG_iab
     END IF
   END IF
   read(10) iphase(icount+1:icount+nelement)
-  print *, "iphase: ", iphase(ic1:ic3)
+  !print *, "iphase: ", iphase(ic1:ic3)
   
   !In rdump, only if nums1(5) >= 5
   IF (tagged) read(10)
   read(10) iunique(icount+1:icount+nelement)
   
-  print *, "Reading xyzmh..."
+  !print *, "Reading xyzmh..."
   DO i = 1, 5
     IF (tagged) read(10) tagi !skip tag
     read(10) xyzmh(i,icount+1:icount+nelement)
   END DO
-  print *, "x: ", xyzmh(1,ic1:ic3)
-  print *, "h: ", xyzmh(5,ic1:ic3)
+  !print *, "x: ", xyzmh(1,ic1:ic3)
+  !print *, "h: ", xyzmh(5,ic1:ic3)
   
-  print *, "Reading vxyzu..."
+  !print *, "Reading vxyzu..."
   DO i = 1, 4
     IF (tagged) read(10) tagi !skip tag
     read(10) vxyzu(i,icount+1:icount+nelement)
   END DO
-  print *, "vx: ", vxyzu(1,ic1:ic3)
-  print *, "u: ", vxyzu(4,ic1:ic3)
+  !print *, "vx: ", vxyzu(1,ic1:ic3)
+  !print *, "u: ", vxyzu(4,ic1:ic3)
   
-  print *, "Reading rho..."
+  !print *, "Reading rho..."
   IF (tagged) read(10) tagi !skip tag
   read(10) alphaMM(icount+1:icount+nelement)
   rho(icount+1:icount+nelement) = alphaMM(icount+1:icount+nelement)
-  print *, "rho: ", rho(ic1:ic3)
+  !print *, "rho: ", rho(ic1:ic3)
   
-  print *, "nums(7) is ", nums(7)
+  !print *, "nums(7) is ", nums(7)
   IF (igradh == 1) THEN
     IF (nums(7) >= 2) THEN
-      print *, "Reading gradh..."
+   !   print *, "Reading gradh..."
       IF (tagged) read(10) tagi !skip tag
-      print *, "tag is ", trim(tagi)  
+    !  print *, "tag is ", trim(tagi)  
       read(10) gradh(icount+1:icount+nelement)
-      print *, "gradh: ", gradh(ic1:ic3)
+    !  print *, "gradh: ", gradh(ic1:ic3)
     END IF
     IF (nums(7) >= 3) THEN
-      print *, "Reading gradhsoft..."
+     ! print *, "Reading gradhsoft..."
       IF (tagged) read(10) tagi !skip tag
-      print *, "tag is ", trim(tagi)  
+      !print *, "tag is ", trim(tagi)  
       read(10) gradhsoft(icount+1:icount+nelement)
-      print *, "gradhsoft: ", poten(ic1:ic3)
+      !print *, "gradhsoft: ", poten(ic1:ic3)
     END IF
   ELSE
-    print *, "Reading dgrav..."
+    !print *, "Reading dgrav..."
     IF (tagged) read(10) tagi !skip tag
     !print *, "tag is ", trim(tagi)
     read(10) dgrav(icount+1:icount+nelement)
-    print *, "dgrav: ", dgrav(ic1:ic3)  
+    !print *, "dgrav: ", dgrav(ic1:ic3)  
   END IF 
   
   
@@ -415,10 +415,10 @@ END SUBROUTINE rdump_sphNG_iab
 !    read(10)
 !  END DO
  
-  print *, "Reading alphaMM..."
+  !print *, "Reading alphaMM..."
   IF (tagged) read(10) tagi !skip tag
   read(10) alphaMM(icount+1:icount+nelement)
-  print *, "alphaMM: ", alphaMM(ic1:ic3)
+  !print *, "alphaMM: ", alphaMM(ic1:ic3)
 
   ! Read the potential if it is here
   if(nums(7).ge.5) then
@@ -430,7 +430,7 @@ END SUBROUTINE rdump_sphNG_iab
   
   !If nptmass is zero, this may be incorrect (though it runs anyway).
   !It may be safer to read to a buffer and only store if nptmass > 0.
-  print *, "Reading sink particle data, nptmass: ", nptmass
+  print *, "   Reading sink particle data, nptmass: ", nptmass
   IF (tagged) read(10) tagi !skip tag
   read(10) listpm(icountsink+1:icountsink+nptmass)
   IF (tagged) read(10) tagi !skip tag
@@ -455,7 +455,7 @@ END SUBROUTINE rdump_sphNG_iab
 !I'm just not sure about this point onwards - if RT comes into things
 ! (and it probably won't) then check it. But that won't be the case.
   
-  print *, "numssink(6) = ", numssink(6)
+  !print *, "numssink(6) = ", numssink(6)
   DO i = 1, numssink(6)-9
     read(10)
   END DO

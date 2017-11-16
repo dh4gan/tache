@@ -122,22 +122,26 @@ while(tryagain!='n'):
 
     plt.suptitle(plot_title)
     axcl.set_title("Clusters")
-    axcl.scatter(x[classification[:]==0],y[classification[:]==0], c=colourpart[classification[:]==0], s=markersize)
+    #axcl.scatter(x[classification[:]==0],y[classification[:]==0], c=colourpart[classification[:]==0], s=markersize)
+    axcl.hexbin(x[classification[:]==0],y[classification[:]==0],gridsize=500)
     axcl.set_xlim(xmin,xmax)
     axcl.set_ylim(ymin,ymax)
 
     axfil.set_title("Filaments")
-    axfil.scatter(x[classification[:]==1],y[classification[:]==1], c=colourpart[classification[:]==1], s=markersize)
+#    axfil.scatter(x[classification[:]==1],y[classification[:]==1], c=colourpart[classification[:]==1], s=markersize)
+    axfil.hexbin(x[classification[:]==1],y[classification[:]==1],gridsize=500)
     axfil.set_xlim(xmin,xmax)
     axfil.set_ylim(ymin,ymax)
 
     axsh.set_title("Sheets")
-    axsh.scatter(x[classification[:]==2],y[classification[:]==2], c=colourpart[classification[:]==2], s = markersize)
+    #axsh.scatter(x[classification[:]==2],y[classification[:]==2], c=colourpart[classification[:]==2], s = markersize)
+    axsh.hexbin(x[classification[:]==2],y[classification[:]==2],gridsize=500)
     axsh.set_xlim(xmin,xmax)
     axsh.set_ylim(ymin,ymax)
 
     axvd.set_title("Voids")
-    axvd.scatter(x[classification[:]==3],y[classification[:]==3], c=colourpart[classification[:]==3], s = markersize)
+    #axvd.scatter(x[classification[:]==3],y[classification[:]==3], c=colourpart[classification[:]==3], s = markersize)
+    axvd.hexbin(x[classification[:]==3],y[classification[:]==3],gridsize=500)
     axvd.set_xlim(xmin,xmax)
     axvd.set_ylim(ymin,ymax)
 

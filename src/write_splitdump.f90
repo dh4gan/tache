@@ -41,13 +41,15 @@ do i=1,neigen
    eigensingle(:) = eigenvalues(:,ielement)
   
    CALL classify_by_eigenvalues(class(ielement), classnum,eigensingle,threshold)
-
 enddo
 
-print*, 'Classification complete'
+print*, 'Classification complete for ',neigen
+print*, 'Classes:'
+do iclass=1,nclasses
+   print*, prefixes(iclass),': ',classnum(iclass)
+enddo
 
 deallocate(eigenelement)
-print*, 'Array deallocated ',memberfile(1),ifile
 
 if(filetype=='SPH') then
 
@@ -78,12 +80,22 @@ if(filetype=='SPH') then
    nparthold = nelement
    nptmasshold = nptmass
  
+   if(.not.(allocated(isort))) then
+      allocate(isort(nelement)) 
+      isort(:) = 0
+   endif
+
    allocate(isorthold(nelement))
    allocate(iphasehold(nelement))
    allocate(istepshold(nelement))
    allocate(xyzmhhold(5,nelement))
    allocate(vxyzuhold(4,nelement))
    allocate(rhohold(nelement))
+   
+   if(.not.(allocated(dgrav))) then
+      allocate(dgrav(nelement)) 
+      dgrav(:) = 0.0
+   endif
    allocate(dgravhold(nelement))
    
    !allocate(listpmhold(nptmass))
@@ -97,14 +109,14 @@ if(filetype=='SPH') then
    !allocate(spinadyhold(nptmass))
    !allocate(spinadzhold(nptmass))
    
-   isorthold(:) = isort(:)
+   if(allocated(isort)) isorthold(:) = isort(:)
    iphasehold(:) = iphase(:)		
    istepshold(:) = isteps(:)
    
    xyzmhhold(:,:) = xyzmh(:,:)
    vxyzuhold(:,:) = vxyzu(:,:)
    rhohold(:) = rho(:)
-   dgravhold(:) = dgrav(:)
+   if(allocated(dgrav)) dgravhold(:) = dgrav(:)
    
    ! listpmhold(:) = listpm(:)
    ! spinxhold(:) = spinx(:)
@@ -146,7 +158,7 @@ if(filetype=='SPH') then
          xyzmh(:,counter) = xyzmhhold(:,ipart)
          vxyzu(:,counter) = vxyzuhold(:,ipart)
          rho(counter) = rhohold(ipart)
-         dgrav(counter) = dgravhold(ipart)			
+         if (allocated(dgrav)) dgrav(counter) = dgravhold(ipart)			
          
       enddo
       

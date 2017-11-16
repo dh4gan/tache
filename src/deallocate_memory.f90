@@ -15,7 +15,8 @@ implicit none
 
      print*, 'Tree memory deallocated'
 
-     deallocate(iphase,isteps,iorig,isort)
+     deallocate(iphase,isteps,isort)
+     if(allocated(iorig)) deallocate(iorig)
      deallocate(xyzmh,vxyzu,rho)	
      deallocate(listpm,spinx,spiny,spinz)
      deallocate(angaddx,angaddy,angaddz)

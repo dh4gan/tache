@@ -43,8 +43,8 @@ SUBROUTINE read_neighbours(neighbourfile)
 
  sdneigh = sqrt(sdneigh/REAL(nelement))
 
- print*, 'Mean neighbour number is ', meanneigh
- print*, 'Standard Deviation: ', sdneigh
+ print'(A,F5.1)', 'Mean neighbour number is ', meanneigh
+ print'(A,F5.1)', 'Standard Deviation: ', sdneigh
  neighcrit = meanneigh-5.0*sdneigh    
 
 END SUBROUTINE read_neighbours

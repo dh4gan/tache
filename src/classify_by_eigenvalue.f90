@@ -27,6 +27,7 @@ enddo
 ! Add to totals for each class
 classnum(classification) = classnum(classification)+1
 
+
 return
 
 END SUBROUTINE classify_by_eigenvalues

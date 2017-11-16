@@ -40,11 +40,11 @@ subroutine write_eigendata(ifile)
   counter =1
   do ielement=1,nelement
      if(iphase(ielement)/=0) cycle
-     if(allocated(iunique)) then
-        eigenelement(counter) = iunique(ielement)
-     else
+!     if(allocated(iunique)) then
+!        eigenelement(counter) = iunique(ielement)
+!     else
         eigenelement(counter) = ielement
-     endif
+!     endif
      xbin(counter) = xyzmh(1,ielement)
      ybin(counter) = xyzmh(2,ielement)
      zbin(counter) = xyzmh(3,ielement)
