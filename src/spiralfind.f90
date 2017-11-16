@@ -85,8 +85,8 @@ do ifile=1,nfiles
 
         spiralmember(i) = ispiral
 
-        print*, 'Beginning spiral ',ispiral
-        print '(a,3(es10.2,1X))', 'Location: ',xyz(1:3,i)
+        !print*, 'Beginning spiral ',ispiral
+        !print '(a,3(es10.2,1X))', 'Location: ',xyz(1:3,i)
         
         call add_spiral_segment(ispiral, i)
 
@@ -120,7 +120,6 @@ do ifile=1,nfiles
 
               ! Calculate angle between velocity vectors of i and jpart
               call calc_position_angle(i,jelement,ispiral,pos_ang)
-                 
               if(rj > ri .and. rho(jelement)>rhomax .and. pos_ang < angcrit) then
                  rhomax = rho(jelement)
                  jmax = jelement
@@ -147,8 +146,8 @@ do ifile=1,nfiles
      if(spirals(ispiral)%nseg>2) then
         call write_spiral_data(ispiral,eigenfile(ifile))
      else
-        print*, 'Spiral ', ispiral, ' has insufficient segments'
-        print*, 'Trying again'
+        !print*, 'Spiral ', ispiral, ' has insufficient segments'
+        !print*, 'Trying again'
 
         ! Remove all particles that were once part of this spiral from analysis
 

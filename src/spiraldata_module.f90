@@ -185,16 +185,13 @@ subroutine sort_by_density
    do ielement=1,nelement
       isort(ielement) = ielement
    enddo
-     
+
+   ! Use a holding array as sort2 is scrambling it for some reason
+   ! (precision error?)
    rhohold = rho
 
-   print*,minval(rho),maxval(rho)
-   print*, rho(1:10)
-   print*, minval(isort),maxval(isort)
    CALL sort2(nelement,rhohold,isort,nelement)
-   print*, minval(rho),maxval(rho)
-   print*, rho(1:10)
-   print*, minval(isort),maxval(isort)
+   
 
    deallocate(rhohold)
    print*, 'Elements sorted by Density'
