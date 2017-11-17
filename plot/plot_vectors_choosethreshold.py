@@ -6,10 +6,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import classify_eigenvalues as classify
-import read_eigenvalue_file as eigenvalue
-import read_eigenvector_file as eigenvector
-from sys import argv
+import io_tache as io
+import filefinder as ff
 from scipy.interpolate import griddata
 from scipy.stats import maxwell,rayleigh
 
@@ -36,41 +34,23 @@ eigcols = range(3,6)
 
 colourchoice = [[0,0,0],[0,1,0],[0,0,1],[1,0,0]]
 
-# Read threshold value from command line or as argument
 
-if(len(argv)==1):
-    threshold = input("What is the threshold for classification? ")
-    valuefile = input("What is the eigenvalue filename? ")
-    vectorfile = input("What is the eigenvector filename? ")
-elif(len(argv)==2):
-    threshold = float(argv[1])
-    valuefile = raw_input("What is the eigenvalue filename?")
-    vectorfile = input("What is the eigenvector filename? ")
-elif(len(argv)>2):
-    threshold = float(argv[1])
-    valuefile = argv[2]
-    vectorfile = argv[3]
-  
+vectorfile = ff.find_local_input_files('eigenvectors*')
+valuefile = io.find_corresponding_eigenvalue_file(vectorfile)
+threshold = input("What is the threshold for classification? ")
+
 # Read in eigenvalue file
 
 print "Reading eigenvalue file ", valuefile
-print "Finding Particle Number"
 
-npart = eigenvalue.find_number_entries(valuefile)
-x,y,z,eigenpart,eigenvalues = eigenvalue.read_file(valuefile,npart)
-
-# fortran does rows and columns differently from python - switch them here
-eigenvalues = eigenvalues.transpose()
+nelement,x,y,z,eigenpart,eigenvalues = io.read_eigenvalue_file(valuefile)
 
 
 # Read in eigenvector file
 
 print "Reading eigenvector file ", vectorfile
-print "Finding Particle Number"
 
-npart = eigenvector.find_number_entries(vectorfile)
-
-eigenvecpart,eigenvectors = eigenvector.read_file(vectorfile,npart)
+npart, eigenvecpart,eigenvectors = io.read_eigenvector_file(vectorfile)
 
 if(not np.array_equal(eigenpart,eigenvecpart)): 
     print "WARNING: files have inconsistent particle IDs"
@@ -81,18 +61,13 @@ tryagain = 'y'
 
 while(tryagain!='n'):
 
-    print "Classifying eigenvalues according to threshold ", threshold    
-    # Classify eigenvalues
-    # Function returns an integer iclass
-    #     iclass = 0 --> cluster
-    #     iclass = 1 --> filament
-    #     iclass = 2 --> sheet
-    #     iclass = 3 --> void
+    print "Classifying eigenvalues according to threshold ", threshold  
+ 
+    classification = io.classify_all_eigenvalues(eigenvalues,npart,threshold)
 
+    # Give some statistics on the classification
 
-
-    classification = np.empty(npart, dtype="int")
-    colourpart = []
+    nclusters,nfilaments,nsheets,nvoids = io.print_class_counts(classification,valuefile)
 
     xfil = []
     yfil=[]
@@ -104,17 +79,16 @@ while(tryagain!='n'):
     zsheet = []
     sheetnormals = []
     
+    print "Determining filament flows and sheet normals"
+
     for i in range(npart):
-        eig = eigenvalues[i,:]
-    
-        classification[i] = classify.classify_eigenvalue(eig, threshold)
-        colourpart.append(colourchoice[classification[i]])
         
         if classification[i]==1:
-            # If particle is classified as a filament, then negative eigenvalue's associated
+            # If particle is classified as a filament, then 
+            # negative eigenvalue's associated
             # eigenvector should give flow direction
         
-            ifilament = np.argmin(eig)
+            ifilament = np.argmin(eigenvalues[i,:])
         
             eigvec = eigenvectors[ifilament,:,i]                    
             
@@ -125,33 +99,19 @@ while(tryagain!='n'):
             zfil.append(z[i])
 
         if classification[i]==2:
-            # If particle is classified as a sheet, then +ve eigenvalue's associated
+            # If particle is classified as a sheet, 
+            # then +ve eigenvalue's associated
             # eigenvector should give sheet normal
         
-            isheet = np.argmax(eig)
+            isheet = np.argmax(eigenvalues[i,:])
         
             eigvec = eigenvectors[isheet,:,i]
-            
-            
+                        
             sheetnormals.append(eigvec)
             xsheet.append(x[i])
             ysheet.append(y[i])
             zsheet.append(z[i])     
          
-    # Give some statistics on the classification
-
-    colourpart = np.array(colourpart)
-
-    clusters = classification[classification[:]==0]
-    filaments = classification[classification[:]==1]
-    sheets = classification[classification[:]==2]
-    voids = classification[classification[:]==3]
-
-    print "Clusters: ",np.size(clusters)
-    print "Filaments: ",np.size(filaments)
-    print "Sheets: ", np.size(sheets)
-    print "Voids: ", np.size(voids)
-
     # Now plot this data
 
     xmin = np.amin(x)
@@ -176,8 +136,7 @@ while(tryagain!='n'):
     zz = np.arange(zmin,zmax,0.1)
         
     xgrid,ygrid,zgrid =np.meshgrid(xx,yy,zz)
-        
-        
+
     points = np.column_stack((xfil,yfil,zfil))
     filamentvectors = np.array(filamentvectors)
     
@@ -185,8 +144,7 @@ while(tryagain!='n'):
     yvalues = filamentvectors[:,1]
     zvalues = filamentvectors[:,2]
             
-    print 'Interpolating Filament eigenvector Field in 3D'
-        
+    print 'Interpolating Filament eigenvector Field in 3D'        
     
     gridxfil = griddata(points,xvalues,(xgrid,ygrid,zgrid),method='linear',fill_value=0.0)
     gridyfil = griddata(points,yvalues,(xgrid,ygrid,zgrid),method='linear',fill_value=0.0)

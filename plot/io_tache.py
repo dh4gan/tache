@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import read_eigenvalue_file as eigen
+import read_eigenvector_file as eigvec
 
 
 def read_eigenvalue_file(filename):
@@ -12,6 +13,33 @@ def read_eigenvalue_file(filename):
     eigenvalues = eigenvalues.transpose()
 
     return nelement,x,y,z,eigenelement,eigenvalues
+
+def read_eigenvector_file(filename):
+    '''Calls the f2py functions needed to read the eigenvector file'''
+
+    nelement = eigvec.find_number_entries(filename)
+    eigenvecelement,eigenvectors = eigvec.read_file(filename,nelement)
+
+    return nelement,eigenvecelement,eigenvectors
+
+def find_corresponding_eigenvector_file(eigenvaluefile):
+   '''Given an input eigenvalue file, finds corresponding eigenvector file'''
+   
+   # eigenvalue file format = "eigenvalues"+(T/V)+"_"+filename
+
+   filename = eigenvaluefile[11:]
+
+   eigenvectorfile = "eigenvectors"+filename
+   return eigenvectorfile
+
+
+def find_corresponding_eigenvalue_file(eigenvectorfile):
+    '''Given an input eigenvector file, finds corresponding eigenvalue file'''
+    
+    filename = eigenvectorfile[12:]
+    eigenvaluefile = "eigenvalues"+filename
+    return eigenvaluefile
+
 
 def classify_eigenvalue(eigenvalues, threshold):
     '''Given 3 eigenvalues, and some threshold, returns an integer

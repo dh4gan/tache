@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import io_tache as io
 import filefinder as ff
 
+# Read in inputs from command line
 filename = ff.find_local_input_files('eigenvalues*')
 threshold = input("What is the threshold for classification? ")
   
