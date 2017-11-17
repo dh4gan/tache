@@ -1,5 +1,5 @@
 # Written 9/10/14 by dh4gan
-# Code reads in  output "eig" file from tache
+# Code reads in  output "eigenvalues" file from tache
 # Applies multiple thresholds to the particles' tensor eigenvalues
 # to classify the region they inhabit
 # The code then outputs statistics for each threshold value
@@ -21,25 +21,12 @@ eigcols = range(3,5)
 
 thresholdlist = np.logspace(-3, 3, num=100)
 
-# Colours of different classes
-# Black= Void
-# Green = filament
-# Blue = sheet
-# Red = cluster
-
-colourchoice = ['black','green','blue','red']
-
-# Read threshold value from command line or as argument
-
-if(len(argv)==1):
-    filename = raw_input("What is the eigenvalue filename? ")
-elif(len(argv)==2):
-    filename = argv[1]
-      
-print "Finding Particle Number"
-npart = read_eigenvalue_file.find_number_entries(filename)
-
+filename = ff.find_local_input_files('eigenvalues*')
+  
+# Read in eigenvalue file
 print "Reading eigenvalue file ", filename
+
+npart = read_eigenvalue_file.find_number_entries(filename)
 x,y,z,eigenpart,eigenvalues = read_eigenvalue_file.read_file(filename,npart)
 
 # fortran does rows and columns differently from python - switch them here
@@ -62,20 +49,23 @@ for threshold in thresholdlist:
     #     iclass = 3 --> void
 
     classification = np.empty(npart, dtype="int")
-    colourpart = []
+
 
     for i in range(npart):
-        eig = eigenvalues[i,:]
-    
+        eig = eigenvalues[i,:]    
         classification[i] = classify.classify_eigenvalue(eig, threshold)
-        colourpart.append(colourchoice[classification[i]])
 
     # Give some statistics on the classification
 
-    clusters.append(np.size(classification[classification[:]==0]))
-    filaments.append(np.size(classification[classification[:]==1]))
-    sheets.append(np.size(classification[classification[:]==2]))
-    voids.append(np.size(classification[classification[:]==3]))
+    icluster = classification[:]==0
+    ifilament = classification[:]==1
+    isheet = classification[:]==2
+    ivoid = classification[:]==3
+
+    clusters.append(np.size(classification[icluster]))
+    filaments.append(np.size(classification[ifilmanet]))
+    sheets.append(np.size(classification[isheet]))
+    voids.append(np.size(classification[ivoid]))
 
     print "Threshold ",thresholdcounter, ": ", threshold
     print "Clusters: ",clusters[-1]

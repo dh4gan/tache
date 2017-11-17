@@ -1,49 +1,24 @@
 # Written 9/10/14 by dh4gan
-# Code reads in output "eig" file from tache
-# Applies a user-defined threshold to the particles' tensor eigenvalues
+# Code reads in output "eigenvalues" file from tache
+# Applies a user-defined threshold to the elements' tensor eigenvalues
 # to classify the region they inhabit
-# Classification is plotted in colour-coded format
+# Classification is plotted via hexbin
 
 import numpy as np
 import matplotlib.pyplot as plt
 import classify_eigenvalues as classify
+import filefinder as ff
 import read_eigenvalue_file
 from sys import argv
 
-# Column indices for different properties
-xcol = 0
-ycol = 1
-zcol = 2
-eigcols = range(3,6)
 
-# Colours of different classes
-# Black= Void
-# Green = filament
-# Blue = sheet
-# Red = cluster
-
-colourchoice = [[0,0,0],[0,1,0],[0,0,1],[1,0,0]]
-
-# Read threshold value from command line or as argument
-
-if(len(argv)==1):
-    threshold = input("What is the threshold for classification? ")
-    filename = raw_input("What is the eigenvalue filename? ")
-elif(len(argv)==2):
-    threshold = float(argv[1])
-    filename = raw_input("What is the eigenvalue filename?")
-elif(len(argv)>2):
-    threshold = float(argv[1])
-    filename = argv[2]
+filename = ff.find_local_input_files('eigenvalues*')
+threshold = input("What is the threshold for classification? ")
   
 # Read in eigenvalue file
-
-print "Finding Particle Number"
-
-npart = read_eigenvalue_file.find_number_entries(filename)
-
 print "Reading eigenvalue file ", filename
 
+npart = read_eigenvalue_file.find_number_entries(filename)
 x,y,z,eigenpart,eigenvalues = read_eigenvalue_file.read_file(filename,npart)
 
 
@@ -64,26 +39,25 @@ while(tryagain!='n'):
     #     iclass = 2 --> sheet
     #     iclass = 3 --> void
 
-
-
     classification = np.empty(npart, dtype="int")
-    colourpart = []
+
 
     for i in range(npart):
         eig = eigenvalues[i,:]
     
         classification[i] = classify.classify_eigenvalue(eig, threshold)
-        colourpart.append(colourchoice[classification[i]])
-
 
     # Give some statistics on the classification
 
-    colourpart = np.array(colourpart)
+    icluster = classification[:]==0
+    ifilament = classification[:]==1
+    isheet = classification[:]==2
+    ivoid = classification[:]==3
 
-    clusters = classification[classification[:]==0]
-    filaments = classification[classification[:]==1]
-    sheets = classification[classification[:]==2]
-    voids = classification[classification[:]==3]
+    clusters = classification[icluster]
+    filaments = classification[ifilament]
+    sheets = classification[isheet]
+    voids = classification[ivoid]
 
     print "Clusters: ",np.size(clusters)
     print "Filaments: ",np.size(filaments)
@@ -97,14 +71,6 @@ while(tryagain!='n'):
 
     ymin = np.amin(y)
     ymax = np.amax(y)
-
-    #xmin = -300.0
-    #xmax = 300.0
-
-    #ymin = -300.0
-    #ymax = 300.0
-
-    markersize = 10.0
 
     fig1, ((axcl,axfil),(axsh,axvd)) = plt.subplots(2,2, sharex='col',sharey='row')
 
@@ -122,26 +88,22 @@ while(tryagain!='n'):
 
     plt.suptitle(plot_title)
     axcl.set_title("Clusters")
-    #axcl.scatter(x[classification[:]==0],y[classification[:]==0], c=colourpart[classification[:]==0], s=markersize)
-    axcl.hexbin(x[classification[:]==0],y[classification[:]==0],gridsize=500)
+    axcl.hexbin(x[icluster],y[icluster],gridsize=500)
     axcl.set_xlim(xmin,xmax)
     axcl.set_ylim(ymin,ymax)
 
     axfil.set_title("Filaments")
-#    axfil.scatter(x[classification[:]==1],y[classification[:]==1], c=colourpart[classification[:]==1], s=markersize)
-    axfil.hexbin(x[classification[:]==1],y[classification[:]==1],gridsize=500)
+    axfil.hexbin(x[ifilament],y[ifilament],gridsize=500)
     axfil.set_xlim(xmin,xmax)
     axfil.set_ylim(ymin,ymax)
 
     axsh.set_title("Sheets")
-    #axsh.scatter(x[classification[:]==2],y[classification[:]==2], c=colourpart[classification[:]==2], s = markersize)
-    axsh.hexbin(x[classification[:]==2],y[classification[:]==2],gridsize=500)
+    axsh.hexbin(x[isheet],y[isheet],gridsize=500)
     axsh.set_xlim(xmin,xmax)
     axsh.set_ylim(ymin,ymax)
 
     axvd.set_title("Voids")
-    #axvd.scatter(x[classification[:]==3],y[classification[:]==3], c=colourpart[classification[:]==3], s = markersize)
-    axvd.hexbin(x[classification[:]==3],y[classification[:]==3],gridsize=500)
+    axvd.hexbin(x[ivoid],y[ivoid],gridsize=500)
     axvd.set_xlim(xmin,xmax)
     axvd.set_ylim(ymin,ymax)
 
@@ -158,5 +120,5 @@ while(tryagain!='n'):
 
 # Once user is happy with the threshold, output this data to file
 
-outputfile = "classify_"+filename+"_"+str(threshold)+".png"
+outputfile = "classified_"+filename+"_"+str(threshold)+".png"
 fig1.savefig(outputfile,format="png")
