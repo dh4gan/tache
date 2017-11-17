@@ -1,32 +1,14 @@
 # Written 9/10/14 by dh4gan
-# Code reads in  output "eigen" file from sph_tidal_tensor
+# Code reads in multiple output "eigenvalues" file from tache
 # Applies a user-defined threshold to the particles' tensor eigenvalues
 # to classify the region they inhabit
-# Classification is plotted in colour-coded format
 
 import numpy as np
 import matplotlib.pyplot as plt
-import classify_eigenvalues as classify
-import read_eigenvalue_file
+import io_tache as io
 import filefinder
-from sys import argv
 
-# Column indices for different properties
-xcol = 0
-ycol = 1
-zcol = 2
-eigcols = range(3,5)
-
-# Colours of different classes
-# Black= Void
-# Green = filament
-# Blue = sheet
-# Red = cluster
-
-colourchoice = ['black','green','blue','red']
-
-# Read threshold value from command line or as argument
-
+# Check tensor file type, whether to make plots for every file, and threshold
 eigchar = raw_input("Analyse Velocity Shear or Tidal Tensor? (enter V or T): ")
 individualchoice = raw_input("Plot each file separately? (y/n)")
 threshold = input("What is the threshold for classification?")
@@ -34,7 +16,6 @@ threshold = input("What is the threshold for classification?")
 prefix = "eigenvalues"+eigchar+"*"
 
 filenames = filefinder.find_sorted_local_input_fileset(prefix)  
-  
 individualplots = False
 
 if("y" in individualchoice or "Y" in individualchoice): individualplots=True
@@ -47,96 +28,31 @@ voids = []
 for filename in filenames:
 
     # Read in eigenvalue file
-
     print "Reading eigenvalue file ",filename
 
-    npart = read_eigenvalue_file.find_number_entries(filename)
-    x,y,z,eigenpart,eigenvalues = read_eigenvalue_file.read_file(filename,npart)
-
-    # fortran does rows and columns differently from python - switch them here
-    eigenvalues = eigenvalues.transpose()
+    npart,x,y,z,eigenpart,eigenvalues = io.read_eigenvalue_file(filename)
 
     # Classify eigenvalues
-    # Function returns an integer iclass
-    #     iclass = 0 --> cluster
-    #     iclass = 1 --> filament
-    #     iclass = 2 --> sheet
-    #     iclass = 3 --> void
-
-    classification = np.empty(npart, dtype="int")
-
-    for i in range(npart):
-        eig = eigenvalues[i,:]
-        classification[i] = classify.classify_eigenvalue(eig, threshold)
+    classification = io.classify_all_eigenvalues(eigenvalues,npart,threshold)
 
     # Give some statistics on the classification
-
-    icluster = classification[:]==0
-    ifilament = classification[:]==1
-    isheet = classification[:]==2
-    ivoid = classification[:]==3
-
-    clusters.append(np.size(classification[icluster)))
-    filaments.append(np.size(classification[ifilament]))
-    sheets.append(np.size(classification[isheet]))
-    voids.append(np.size(classification[ivoid]))
-
-    print "File: ",filename    
-    print "Clusters: ",clusters[-1]
-    print "Filaments: ",filaments[-1]
-    print "Sheets: ", sheets[-1]
-    print "Voids: ", voids[-1]
-    print "-------"
-
+    nclusters,nfilaments,nsheets,nvoids = io.print_class_counts(classification,filename)
     
-    # Now plot this data
+    clusters.append(nclusters)
+    filaments.append(nfilaments)
+    sheets.append(nsheets)
+    voids.append(nvoids)
 
-    if(individualplots):        
+    # Now plot this data if wished
 
-        xmin = np.amin(x)
-        xmax = np.amax(x)
+    if(individualplots):      
+        fig1 = io.plot_all_classes_xy(x,y,filename,classification,threshold)
 
-        ymin = np.amin(y)
-        ymax = np.amax(y)
-
-        fig1, ((axcl,axfil),(axsh,axvd)) = plt.subplots(2,2, sharex='col',sharey='row')
-
-        # Decide on plot title using filename:
-        # Files containing "T" have been calculated using the tidal tensor
-        # Files containing "V" have been calculated using the velocity shear tensor
-    
-        plot_title = "Tensor Classification, Threshold ="+str(threshold)
-        
-        if "T" in filename:
-            plot_title = "Tidal Tensor Classification, Threshold ="+str(threshold)
-        if "V" in filename:
-            plot_title = "Velocity Shear Tensor Classification, Threshold ="+str(threshold)
-
-        plt.suptitle(plot_title)
-        axcl.set_title("Clusters")
-        axcl.hexbin(x[icluster],y[icluster],gridsize=500)
-        axcl.set_xlim(xmin,xmax)
-        axcl.set_ylim(ymin,ymax)
-
-        axfil.set_title("Filaments")
-        axfil.hexbin(x[ifilament],y[ifilament],gridsize=500)
-        axfil.set_xlim(xmin,xmax)
-        axfil.set_ylim(ymin,ymax)
-
-        axsh.set_title("Sheets")
-        axsh.hexbin(x[isheet],y[isheet],gridsize=500)
-        axsh.set_xlim(xmin,xmax)
-        axsh.set_ylim(ymin,ymax)
-
-        axvd.set_title("Voids")
-        axvd.hexbin(x[ivoid],y[ivoid],gridsize=500)
-        axvd.set_xlim(xmin,xmax)
-        axvd.set_ylim(ymin,ymax)
-        
         outputfile = "classify_"+filename+"_"+str(threshold)+".png"
         print "Plotting to file ",outputfile
          
-        plt.savefig(outputfile,format="png")
+        fig1.savefig(outputfile,format="png")
+        plt.close(fig1)
 
 # Now plot the number of each class versus time
 

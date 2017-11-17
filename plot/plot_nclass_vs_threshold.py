@@ -6,16 +6,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import classify_eigenvalues as classify
-import read_eigenvalue_file
+import io_tache as io
 import filefinder
-from sys import argv
-
-# Column indices for different properties
-xcol = 0
-ycol = 1
-zcol = 2
-eigcols = range(3,5)
 
 # Selection of thresholds
 
@@ -26,11 +18,7 @@ filename = ff.find_local_input_files('eigenvalues*')
 # Read in eigenvalue file
 print "Reading eigenvalue file ", filename
 
-npart = read_eigenvalue_file.find_number_entries(filename)
-x,y,z,eigenpart,eigenvalues = read_eigenvalue_file.read_file(filename,npart)
-
-# fortran does rows and columns differently from python - switch them here
-eigenvalues = eigenvalues.transpose()
+npart,x,y,z,eigenpart,eigenvalues = io.read_eigenvalue_file.find_number_entries(filename)
 
 clusters = []
 filaments = []
@@ -41,39 +29,18 @@ thresholdcounter = 0
 for threshold in thresholdlist:
 
     thresholdcounter = thresholdcounter +1
+
     # Classify eigenvalues
-    # Function returns an integer iclass
-    #     iclass = 0 --> cluster
-    #     iclass = 1 --> filament
-    #     iclass = 2 --> sheet
-    #     iclass = 3 --> void
+    classification = io.classify_all_eigenvalues(eigenvalues,npart,threshold)
 
-    classification = np.empty(npart, dtype="int")
-
-
-    for i in range(npart):
-        eig = eigenvalues[i,:]    
-        classification[i] = classify.classify_eigenvalue(eig, threshold)
-
-    # Give some statistics on the classification
-
-    icluster = classification[:]==0
-    ifilament = classification[:]==1
-    isheet = classification[:]==2
-    ivoid = classification[:]==3
-
-    clusters.append(np.size(classification[icluster]))
-    filaments.append(np.size(classification[ifilmanet]))
-    sheets.append(np.size(classification[isheet]))
-    voids.append(np.size(classification[ivoid]))
-
+    # Give some statistics
     print "Threshold ",thresholdcounter, ": ", threshold
-    print "Clusters: ",clusters[-1]
-    print "Filaments: ",filaments[-1]
-    print "Sheets: ", sheets[-1]
-    print "Voids: ", voids[-1]
-    print "-------"
+    nclusters,nfilaments,nsheets,nvoids = io.print_class_counts(classification,filename)
 
+    clusters.append(nclusters)
+    filaments.append(nfilaments)
+    sheets.append(nsheets)
+    voids.append(nvoids)
     
 # Now plot this data
 
@@ -89,10 +56,15 @@ ax.set_yscale('log')
 ax.set_ylim(1.0e-6,1.0e0)
 
 
-if(np.sum(clusters)>0.0): ax.plot(thresholdlist,clusters, color='blue', label='Clusters')
-if(np.sum(filaments)>0.0): ax.plot(thresholdlist,filaments,color='green', label='Filaments')
-if(np.sum(sheets)>0.0): ax.plot(thresholdlist,sheets, color='red',label='Sheets')
-if(np.sum(voids)>0.0): ax.plot(thresholdlist,voids, color='cyan',label='Voids')
+if(np.sum(clusters)>0.0): 
+    ax.plot(thresholdlist,clusters, color='blue', label='Clusters')
+if(np.sum(filaments)>0.0): 
+    ax.plot(thresholdlist,filaments,color='green', label='Filaments')
+if(np.sum(sheets)>0.0): 
+    ax.plot(thresholdlist,sheets, color='red',label='Sheets')
+if(np.sum(voids)>0.0): 
+    ax.plot(thresholdlist,voids, color='cyan',label='Voids')
+
 ax.set_xlabel('Threshold eigenvalue (dimensionless)')
 ax.set_ylabel('Fraction of Simulation')
 ax.legend(loc = 'lower right')

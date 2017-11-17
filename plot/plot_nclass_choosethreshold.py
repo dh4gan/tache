@@ -8,9 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import io_tache as io
 import filefinder as ff
-import read_eigenvalue_file
-from sys import argv
-
 
 filename = ff.find_local_input_files('eigenvalues*')
 threshold = input("What is the threshold for classification? ")
@@ -19,19 +16,9 @@ threshold = input("What is the threshold for classification? ")
 print "Reading eigenvalue file ", filename
 npart,x,y,z,eigenpart,eigenvalues = io.read_eigenvalue_file(filename)
 
-
-
-#npart = read_eigenvalue_file.find_number_entries(filename)
-#x,y,z,eigenpart,eigenvalues = read_eigenvalue_file.read_file(filename,npart)
-
-
-# fortran does rows and columns differently from python - switch them here
-#eigenvalues = eigenvalues.transpose()
-
-tryagain = 'y'
-
 # Now enter a do while loop until user is happy with result
 
+tryagain = 'y'
 while(tryagain!='n'):
 
     print "Classifying eigenvalues according to threshold ", threshold    
