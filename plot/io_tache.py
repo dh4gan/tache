@@ -25,7 +25,7 @@ def read_eigenvector_file(filename):
 def find_corresponding_eigenvector_file(eigenvaluefile):
    '''Given an input eigenvalue file, finds corresponding eigenvector file'''
    
-   # eigenvalue file format = "eigenvalues"+(T/V)+"_"+filename
+   # eigenvalue file format = "eigenvalues"+(T/V)+"_"+dumpfile
 
    filename = eigenvaluefile[11:]
 
@@ -35,7 +35,8 @@ def find_corresponding_eigenvector_file(eigenvaluefile):
 
 def find_corresponding_eigenvalue_file(eigenvectorfile):
     '''Given an input eigenvector file, finds corresponding eigenvalue file'''
-    
+
+    # eigenvector file format = "eigenvectors"+(T/V)+"_"+dumpfile    
     filename = eigenvectorfile[12:]
     eigenvaluefile = "eigenvalues"+filename
     return eigenvaluefile

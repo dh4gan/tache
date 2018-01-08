@@ -9,7 +9,7 @@ import filefinder as ff
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from io_spiral import get_chisquared_logspiral,logspiral_x,logspiral_y,find_minimum_t_logspiral
+from io_spiral import get_chisquared_rpitchspiral,rpitchspiral_x,rpitchspiral_y,find_minimum_t_rpitchspiral
 
 import corner as c
 
@@ -24,6 +24,11 @@ nsamples = int(1.0e5) # Total number of MCMC samplings
 amin = 3.5
 amax = 5.5
 
+d1min = 0.0
+d1max = 1.5
+d2min = -5.0
+d2max = 5.0
+
 bmin = 0.1
 bmax = 0.3
 
@@ -36,7 +41,8 @@ y0max = 2.0
 # After burn in, MC sampling from multivariate Gaussian
 
 sigma_a = 0.01
-sigma_b = 0.01
+sigma_d1 = 0.01
+sigma_d2 = 0.01
 sigma_x0 = 0.01
 sigma_y0 = 0.01
     
@@ -93,7 +99,9 @@ for dumpfile in dumpfiles:
         # Begin MCMC process
     
         avalues = []
-        bvalues = []
+        d1values = []
+	d2values = []
+	rpvalues = []
         x0values = []
         y0values = []
         chivalues = []
@@ -103,16 +111,20 @@ for dumpfile in dumpfiles:
         isample = 0
     
         ainit = 1.0
-        binit = 1.0
+	d1init = 1.0
+	d2init = 0.0
+	rpinit = 300.0
         x0init = 0.0
         y0init = 0.0
         xsigninit= 1.0
         ysigninit = 1.0
     
-        chimin = get_chisquared_logspiral(xi, yi, ainit, binit, x0init, y0init, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1)    
+        chimin = get_chisquared_rpitchspiral(xi, yi, ainit, d1init, d2init, rpinit, x0init, y0init, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1)    
     
         a=ainit
-        b=binit
+        d1 = d1init
+	d2 = d2init
+	rp = rpinit
         x0=x0init
         y0=y0init
         xsign = xsigninit
@@ -130,14 +142,18 @@ for dumpfile in dumpfiles:
             # Explore the parameter space widely initially
             if(isample < nburn):                
                 anext = (amax-amin)*np.random.rand() + amin
-                bnext = (bmax-bmin)*np.random.rand() + bmin
+                d1next = (d1max-d1min)*np.random.rand() + d1min
+		d2next = (d2max-d2min)*np.random.rand() + d2min
+		rpnext = (rpmax-rpmin)*np.random.rand() + rpmin
                 x0next = (x0max-x0min)*np.random.rand() + x0min
                 y0next = (y0max-y0min)*np.random.rand() + y0min
             
             # After burn in, choose next variable from multivariate Gaussian
             else:
                 anext = np.random.randn()*sigma_a + a
-                bnext = np.random.randn()*sigma_b + b
+                d1next = np.random.randn()*sigma_d1 + d1
+		d2next = np.random.randn()*sigma_d2 + d2
+		rpnext = np.random.randn()*sigma_rp + rp
                 x0next = np.random.randn()*sigma_x0 + x0
                 y0next = np.random.randn()*sigma_y0 + y0
                     
@@ -154,7 +170,7 @@ for dumpfile in dumpfiles:
             #xsignnext = 1.0
             #ysignnext = -1.0
     
-            chinext = get_chisquared_logspiral(xi, yi, anext, bnext, x0next, y0next, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.5)
+            chinext = get_chisquared(xi, yi, anext, d1next,d2next,rpnext, x0next, y0next, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.5)
                         
             # Calculate likelihood ratio
         
@@ -169,7 +185,9 @@ for dumpfile in dumpfiles:
                             
                 chimin = chinext
                 a = anext
-                b = bnext
+                d1 = d1next
+		d2 = d2next
+		rp = rpnext
                 x0 = x0next
                 y0= y0next
                 xsign = xsignnext
@@ -178,7 +196,9 @@ for dumpfile in dumpfiles:
             if(chimin<globalchimin):
                 globalchimin = chimin
                 globalamin = a 
-                globalbmin = b 
+                globald1min = d1
+		globald2min = d2
+		globalrpmin = rp 
                 globalx0min = x0
                 globaly0min = y0
                 globalxsign = xsign
@@ -189,7 +209,9 @@ for dumpfile in dumpfiles:
                 naccept = naccept + 1           
                 print 'Sample: ', isample,a,b,x0,y0,xsign,ysign,chimin
                 avalues.append(a)
-                bvalues.append(b)
+                d1values.append(d1)
+		d2values.append(d2)
+		rpvalues.append(rp)
                 x0values.append(x0)
                 y0values.append(y0)
                 xsignvalues.append(xsign)
@@ -208,7 +230,7 @@ for dumpfile in dumpfiles:
         nMCMC = len(avalues)                
         MCMCfile = filename+'.MCMC'
     
-        allsamples = np.array((avalues,bvalues,x0values,y0values))    
+        allsamples = np.array((avalues,d1values,d2values,rpvalues,x0values,y0values))    
         allsamples = np.transpose(allsamples)
     
         # Subsample the total
@@ -232,25 +254,25 @@ for dumpfile in dumpfiles:
     
     
         print 'MCMC minimum: '
-        print globalamin, globalbmin, globalx0min, globaly0min, globalxsign,globalysign
+        print globalamin, globald1min,globald2min,globalrpmin, globalx0min, globaly0min, globalxsign,globalysign
     
         # Write best fit to file
     
-        line = str(ispiral)+'   '+str(len(xi))+ '  '+ str(globalamin)+ '  '+str(globalbmin) + '   '+str(globalx0min) + '   '+str(globaly0min) + '   '+str(chimin)
+        line = str(ispiral)+'   '+str(len(xi))+ '  '+ str(globalamin)+ '  '+str(globald1min) + '  '+str(globald2min) + '   '+str(globalrpmin)+ '   '+str(globalx0min) + '   '+str(globaly0min) + '   '+str(chimin)
         line = line + '   '+str(globalxsign)+'    '+str(globalysign)+ ' \n'
     
         f_fit.write(line)
     
         # Create corner plot for MCMC parameters
     
-        cplot = c.corner(allsamples, labels=['$a$','$b$','$x_0$ (AU)','$y_0$ (AU)'], label_kwargs = {"fontsize": 22})
+        cplot = c.corner(allsamples, labels=['$a$','$d_1$','$d_2$', '$r_p$','$x_0$ (AU)','$y_0$ (AU)'], label_kwargs = {"fontsize": 22})
     
         cplot.savefig(dumpfile+'_MCMC_corner_'+str(ispiral)+'.png')
         
         # Find minimum and maximum t for spiral plotting
     
-        tmin,sepmin = find_minimum_t_logspiral(xi[0],yi[0], globalamin,globalbmin,globalx0min,globaly0min, npoints,xsign=globalxsign,ysign=globalysign)
-        tmax,sepmin = find_minimum_t_logspiral(xi[-1],yi[-1], globalamin,globalbmin,globalx0min,globaly0min, npoints,xsign=globalxsign,ysign=globalysign)
+        tmin,sepmin = find_minimum_t_rpitchspiral(xi[0],yi[0], globalamin,globald1min,globald2min,globalrpmin,globalx0min,globaly0min, npoints,xsign=globalxsign,ysign=globalysign)
+        tmax,sepmin = find_minimum_t_rpitchspiral(xi[-1],yi[-1], globalamin,globald1min,globald2min,globalrpmin,globalx0min,globaly0min, npoints,xsign=globalxsign,ysign=globalysign)
         
         print tmin, tmax
         nplot = 100
@@ -261,13 +283,13 @@ for dumpfile in dumpfiles:
     
         for i in range(nplot):
         
-            xplot[i] = logspiral_x(t[i], globalamin, globalbmin, globalx0min,xsign=globalxsign)
-            yplot[i] = logspiral_y(t[i], globalamin, globalbmin, globaly0min,ysign=globalysign)
+            xplot[i] = rpitchspiral_x(t[i], globalamin, globald1min, globald2min,globalrpmin, globalx0min,xsign=globalxsign)
+            yplot[i] = rpitchspiral_y(t[i], globalamin, globald1min, globald2min, globalrpmin, globaly0min,ysign=globalysign)
         
         
         ax1.plot(xplot,yplot, color='red')
         ax1.scatter(xi,yi, color='green', marker='x')
     
     f_fit.close()
-    fig1.savefig(dumpfile+'_spirals_fitted.png')    
+    fig1.savefig(dumpfile+'_spirals_rpitchfitted.png')    
     
