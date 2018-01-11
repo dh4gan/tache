@@ -26,20 +26,28 @@ def logspiral_d2y(t,a,b,y0,ysign=1):
 
 # Functions for spiral with r-dependent pitch angle
 
+
+def rpitch_phi(a,d1,d2,r,rp):
+    pitch = np.abs(d1*np.power(rp,d2)/(np.power(r,d2)-np.power(rp,d2)))
+    b = 1.0/(np.tan(np.pi/2 - pitch))
+    return pitch,b
+
+def rpitchspiral_theta(r,a,d1,d2,rp,x0,y0,xsign=1,ysign=1):
+    pitch, b = rpitch_phi(a,d1,d2,r,rp)
+    theta = np.log(r/a)/b
+    theta = np.mod(theta,2.0*np.pi)
+
 def rpitchspiral_x(t,a,d1,d2,r,rp,x0,xsign=1):
 	# Compute b parameter
-
-	pitch = d1/np.pow(np.abs(r-rp),d2)
-	b = 1.0/(np.tan(np.pi/2 - pitch))
+        pitch,b = rpitch_phi(a,d1,d2,r,rp)
 
 	# Now compute spiral x position
 	return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
-def rpitchspiral_y(t,a,d1,d2,r,rp,x0,ysign=1):
+def rpitchspiral_y(t,a,d1,d2,r,rp,y0,ysign=1):
         # Compute b parameter
 
-        pitch = d1/np.pow(np.abs(r-rp),d2)
-        b = 1.0/(np.tan(np.pi/2 - pitch))
+	pitch,b = rpitch_phi(a,d1,d2,r,rp)
 
         # Now compute spiral y position
         return ysign*a*np.exp(b*t)*np.sin(t) + y0
@@ -113,9 +121,9 @@ def get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0
     return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
         
 
-def get_chisquared_rpitchspiral(x,y,a,d1,d2,rp,x0,y0,npoints,,xsign=1.0,ysign=1.0,sigma=1.0):
+def get_chisquared_rpitchspiral(x,y,a,d1,d2,rp,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
 
- '''Returns the chi-squared of a r-dependent pitch spiral model given arrays x,y
+    '''Returns the chi-squared of a r-dependent pitch spiral model given arrays x,y
     Assumes uniform errors'''
 
     tmin = np.zeros(len(x))

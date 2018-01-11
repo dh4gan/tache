@@ -33,8 +33,8 @@ fig1=plt.figure()
 ax1 = fig1.add_subplot(111)
 ax1.set_xlabel('x')
 ax1.set_ylabel('y')
-ax1.set_xlim(-40,40)
-ax1.set_ylim(-40,40)
+#ax1.set_xlim(-40,40)
+#ax1.set_ylim(-40,40)
 
 ispiral = 0
 
