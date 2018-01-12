@@ -15,7 +15,7 @@ import corner as c
 
 
 npoints = 100 # number of evaluations to find point distance from spiral model
-nburn = 50 # Burn in sequence length
+nburn = 1000 # Burn in sequence length
 nanalyse = 10 # Only fit this many arms
 nsamples = int(1.0e5) # Total number of MCMC samplings
 
@@ -29,8 +29,8 @@ d1max = 1.5
 d2min = -5.0
 d2max = 5.0
 
-bmin = 0.1
-bmax = 0.3
+etamin = 0.01
+etamax = 0.5
 
 rpmin = 300.0
 rpmax = 500.0
@@ -48,7 +48,8 @@ sigma_d1 = 0.01
 sigma_d2 = 0.01
 sigma_x0 = 0.01
 sigma_y0 = 0.01
-sigma_rp = 1.0    
+sigma_rp = 1.0
+sigma_eta = 0.01    
 
 
 # Load dumpfile names from spirallist.txt
@@ -106,6 +107,7 @@ for dumpfile in dumpfiles:
         d1values = []
 	d2values = []
 	rpvalues = []
+        etavalues = []
         x0values = []
         y0values = []
         chivalues = []
@@ -118,16 +120,18 @@ for dumpfile in dumpfiles:
 	d1init = 1.0
 	d2init = 0.0
 	rpinit = 400.0
+        etainit = 0.25
         x0init = 0.0
         y0init = 0.0
         xsigninit= 1.0
         ysigninit = 1.0
     
-        chimin = get_chisquared_rpitchspiral(xi, yi, ainit, d1init, d2init, rpinit, x0init, y0init, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1)    
+        chimin = get_chisquared_rpitchspiral(xi, yi, ainit, d1init, d2init, etainit,rpinit, x0init, y0init, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1)    
     
         a=ainit
         d1 = d1init
 	d2 = d2init
+        eta = etainit
 	rp = rpinit
         x0=x0init
         y0=y0init
@@ -148,6 +152,7 @@ for dumpfile in dumpfiles:
                 anext = (amax-amin)*np.random.rand() + amin
                 d1next = (d1max-d1min)*np.random.rand() + d1min
 		d2next = (d2max-d2min)*np.random.rand() + d2min
+                etanext = (etamax-etamin)*np.random.rand() + etamin
 		rpnext = (rpmax-rpmin)*np.random.rand() + rpmin
                 x0next = (x0max-x0min)*np.random.rand() + x0min
                 y0next = (y0max-y0min)*np.random.rand() + y0min
@@ -158,6 +163,7 @@ for dumpfile in dumpfiles:
                 d1next = np.random.randn()*sigma_d1 + d1
 		d2next = np.random.randn()*sigma_d2 + d2
 		rpnext = np.random.randn()*sigma_rp + rp
+                etanext = np.random.randn()*sigma_eta + eta
                 x0next = np.random.randn()*sigma_x0 + x0
                 y0next = np.random.randn()*sigma_y0 + y0
                     
@@ -174,7 +180,7 @@ for dumpfile in dumpfiles:
             #xsignnext = 1.0
             #ysignnext = -1.0
     
-            chinext = get_chisquared_rpitchspiral(xi, yi, anext, d1next,d2next,rpnext, x0next, y0next, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.5)
+            chinext = get_chisquared_rpitchspiral(xi, yi, anext, d1next,d2next,etanext,rpnext, x0next, y0next, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.5)
                         
             # Calculate likelihood ratio
         
@@ -191,6 +197,7 @@ for dumpfile in dumpfiles:
                 a = anext
                 d1 = d1next
 		d2 = d2next
+                eta = etanext
 		rp = rpnext
                 x0 = x0next
                 y0= y0next
@@ -202,6 +209,7 @@ for dumpfile in dumpfiles:
                 globalamin = a 
                 globald1min = d1
 		globald2min = d2
+                globaletamin = eta
 		globalrpmin = rp 
                 globalx0min = x0
                 globaly0min = y0
@@ -211,10 +219,11 @@ for dumpfile in dumpfiles:
             if(isample > nburn):
  
                 naccept = naccept + 1           
-                print 'Sample: ', isample,a,d1,d2,rp,x0,y0,xsign,ysign,chimin
+                print 'Sample: ', isample,a,d1,d2,eta,rp,x0,y0,xsign,ysign,chimin
                 avalues.append(a)
                 d1values.append(d1)
 		d2values.append(d2)
+                etavalues.append(eta)
 		rpvalues.append(rp)
                 x0values.append(x0)
                 y0values.append(y0)
@@ -234,7 +243,7 @@ for dumpfile in dumpfiles:
         nMCMC = len(avalues)                
         MCMCfile = filename+'.MCMC'
     
-        allsamples = np.array((avalues,d1values,d2values,rpvalues,x0values,y0values))    
+        allsamples = np.array((avalues,d1values,d2values,etavalues,rpvalues,x0values,y0values))    
         allsamples = np.transpose(allsamples)
     
         # Subsample the total
@@ -258,11 +267,11 @@ for dumpfile in dumpfiles:
     
     
         print 'MCMC minimum: '
-        print globalamin, globald1min,globald2min,globalrpmin, globalx0min, globaly0min, globalxsign,globalysign
+        print globalamin, globald1min,globald2min,globaletamin, globalrpmin, globalx0min, globaly0min, globalxsign,globalysign
     
         # Write best fit to file
     
-        line = str(ispiral)+'   '+str(len(xi))+ '  '+ str(globalamin)+ '  '+str(globald1min) + '  '+str(globald2min) + '   '+str(globalrpmin)+ '   '+str(globalx0min) + '   '+str(globaly0min) + '   '+str(chimin)
+        line = str(ispiral)+'   '+str(len(xi))+ '  '+ str(globalamin)+ '  '+str(globald1min) + '  '+str(globald2min) + '    ' +str(globaletamin)+'   '+str(globalrpmin)+ '   '+str(globalx0min) + '   '+str(globaly0min) + '   '+str(chimin)
         line = line + '   '+str(globalxsign)+'    '+str(globalysign)+ ' \n'
     
         f_fit.write(line)
