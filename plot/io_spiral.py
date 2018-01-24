@@ -14,6 +14,14 @@ def read_spiralmembership(filename):
 def logspiral_x(t,a,b,x0,xsign=1):    
     return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
+# Overloaded function so that a single array of model parameters can be passed
+def logspiral_x(t,m,xsign=1):
+    m[0] = a
+    m[1] = b
+    m[2] = x0
+
+    return logspiral_x(t,a,b,x0,xsign=xsign)
+
 def logspiral_dx(t,a,b,x0,xsign=1):    
     return -xsign*b*a*np.exp(b*t)*np.sin(t)
 
@@ -24,6 +32,14 @@ def logspiral_d2x(t,a,b,x0,xsign=1):
 
 def logspiral_y(t,a,b,y0,ysign=1):    
     return ysign*a*np.exp(b*t)*np.sin(t) + y0
+
+def logspiral_y(t,m,ysign=1):
+    m[0] = a
+    m[1] = b
+    m[3] = y0
+
+    return logspiral_y(t,a,b,y0,ysign=ysign)
+    
 
 def logspiral_dy(t,a,b,y0,ysign=1):    
     return ysign*b*a*np.exp(b*t)*np.cos(t)
@@ -44,6 +60,15 @@ def generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
         yspiral[i] = logspiral_y(t[i],a,b,y0,ysign=ysign)
     
     return xspiral,yspiral
+
+def generate_logspiral_curve(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+    m[0] = a
+    m[1] = b
+    m[2] = x0
+    m[3] = y0
+    return generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
+
+
 
 # Functions for spiral with r-dependent pitch angle
 # (Zhu et al (2015), ApJ 813:88
@@ -68,6 +93,16 @@ def rpitchspiral_theta(r,a,hp,alpha,eta,rp,x0,y0,xsign=1,ysign=1):
     y = ysign*r*np.sin(theta)
     return x,y,theta,pitch,b
 
+def rpitchspiral_theta(r,m,xsign=1,ysign=1):
+    m[0] = a
+    m[1] = hp
+    m[2] = alpha
+    m[3] = eta
+    m[4] = rp
+    m[5] = x0
+    m[6] = y0
+    
+    return rpitchspiral_theta(r,a,hp,alpha,eta,rp,x0,xsign=xsign,ysign=ysign)
 
 def rpitchspiral_x(t,a,hp,alpha,eta,r,rp,x0,xsign=1):
 	# Compute b parameter
@@ -76,13 +111,33 @@ def rpitchspiral_x(t,a,hp,alpha,eta,r,rp,x0,xsign=1):
 	# Now compute spiral x position
 	return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
+def rpitchspiral_x(t,m,r,xsign=1):
+    m[0] = a
+    m[1] = hp
+    m[2] = alpha
+    m[3] = eta
+    m[4] = rp
+    m[5] = x0
+    
+    return rpitchspiral_x(t,a,hp,alpha,eta,r,rp,x0,ysign=1)
+
 def rpitchspiral_y(t,a,hp,alpha,eta,r,rp,y0,ysign=1):
-        # Compute b parameter
+    # Compute b parameter
 
-	pitch,b = rpitch_phi(a,hp,alpha,eta,r,rp)
+    pitch,b = rpitch_phi(a,hp,alpha,eta,r,rp)
 
-        # Now compute spiral y position
-        return ysign*a*np.exp(b*t)*np.sin(t) + y0
+    # Now compute spiral y position
+    return ysign*a*np.exp(b*t)*np.sin(t) + y0
+
+def rpitchspiral_y(t,m,r,xsign=1):
+    m[0] = a
+    m[1] = hp
+    m[2] = alpha
+    m[3] = eta
+    m[4] = rp
+    m[6] = y0
+    
+    return rpitchspiral_x(t,a,hp,alpha,eta,r,rp,y0,ysign=ysign)
 
 
 def separation(x1,y1,x2,y2):
