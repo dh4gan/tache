@@ -3,7 +3,7 @@
 # (List of spiral files, with x y z points)
 
 # Uses scipy.optimise to find the minimum chisquared to find best fitting logarithmic spiral
-# Uses 'corner' to make corner plots (cite dx.doi.org/10.5281/zenodo.45906)
+
 
 import filefinder as ff
 import numpy as np
@@ -20,7 +20,7 @@ import scipy.optimize
 # Load dumpfile names from spirallist.txt
 dumpfiles = np.loadtxt('spirallist.txt', dtype='string',skiprows=1)
 
-nanalyse = 3
+nanalyse = 15
 
 try:
     nfiles = len(dumpfiles)
@@ -57,8 +57,8 @@ for dumpfile in dumpfiles:
         yi = data[:,1]
 
         m = np.zeros(4)
-        m[0] = 20.0
-        m[1] = 0.15
+        m[0] = 70.0
+        m[1] = 0.5
         m[2] = 0.0
         m[3] = 0.0    
 

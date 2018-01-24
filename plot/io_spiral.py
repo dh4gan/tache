@@ -1,5 +1,15 @@
 import numpy as np
 
+
+def read_spiralmembership(filename):
+    '''Reads the spiral membership data of all particles analysed'''
+    spiraldata = np.genfromtxt(filename)
+    x = spiraldata[:,1]
+    y = spiraldata[:,2]
+    z = spiraldata[:,3]
+    spiralmember = spiraldata[:,4]
+    return x,y,z,spiralmember
+
 # Functions to deliver parametric forms of spiral (x) (and derivatives)
 def logspiral_x(t,a,b,x0,xsign=1):    
     return xsign*a*np.exp(b*t)*np.cos(t) + x0
@@ -22,38 +32,54 @@ def logspiral_d2y(t,a,b,y0,ysign=1):
     return -ysign*b*b*a*np.exp(b*t)*np.sin(t)
 
 
-# Functions for spiral with r-dependent pitch angle
+def generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
+    # Generate spiral curve for this fit
 
-def rpitch_phi(a,d1,d2,eta,r,rp):
-    b = d1*np.power(rp/r,1.0+eta)*np.power(r,d2)/np.abs(np.power(r,d2)-np.power(rp,d2))
+    t = np.linspace(tmin,tmax,num=npoints)
+    xspiral = np.zeros(npoints)
+    yspiral = np.zeros(npoints)
+
+    for i in range(npoints):
+        xspiral[i] = logspiral_x(t[i],a,b,x0,xsign=xsign)
+        yspiral[i] = logspiral_y(t[i],a,b,y0,ysign=ysign)
+    
+    return xspiral,yspiral
+
+# Functions for spiral with r-dependent pitch angle
+# (Zhu et al (2015), ApJ 813:88
+
+def rpitch_phi(a,hp,alpha,eta,r,rp):
+    b = (hp/rp)*np.power(rp/r,1.0+eta)*np.power(r,alpha)/np.abs(np.power(r,alpha)-np.power(rp,alpha))
+
+    #b = 1.0/b
 
 #    pitch = d1*np.power(r,-0.04)
     pitch = np.arctan(b)
     return pitch,b
 
-def rpitchspiral_theta(r,a,d1,d2,eta,rp,x0,y0,xsign=1,ysign=1):
-    pitch, b = rpitch_phi(a,d1,d2,eta,r,rp) 
+def rpitchspiral_theta(r,a,hp,alpha,eta,rp,x0,y0,xsign=1,ysign=1):
+    pitch, b = rpitch_phi(a,hp,alpha,eta,r,rp) 
 #    b =0.3    
     r0 = np.sqrt(x0*x0 + y0*y0)
-    theta = np.log(r-r0/a)/b
-#    theta = np.mod(theta,2.0*np.pi)
+    theta = np.log((r-r0)/a)/b
+    theta = np.mod(theta,2.0*np.pi)
 
     x = xsign*r*np.cos(theta)
     y = ysign*r*np.sin(theta)
     return x,y,theta,pitch,b
 
 
-def rpitchspiral_x(t,a,d1,d2,eta,r,rp,x0,xsign=1):
+def rpitchspiral_x(t,a,hp,alpha,eta,r,rp,x0,xsign=1):
 	# Compute b parameter
-        pitch,b = rpitch_phi(a,d1,d2,eta,r,rp)
+        pitch,b = rpitch_phi(a,hp,alpha,eta,r,rp)
 
 	# Now compute spiral x position
 	return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
-def rpitchspiral_y(t,a,d1,d2,eta,r,rp,y0,ysign=1):
+def rpitchspiral_y(t,a,hp,alpha,eta,r,rp,y0,ysign=1):
         # Compute b parameter
 
-	pitch,b = rpitch_phi(a,d1,d2,eta,r,rp)
+	pitch,b = rpitch_phi(a,hp,alpha,eta,r,rp)
 
         # Now compute spiral y position
         return ysign*a*np.exp(b*t)*np.sin(t) + y0
@@ -90,7 +116,8 @@ def find_minimum_t_logspiral(xi,yi, a,b,x0,y0, npoints,xsign=1.0,ysign=1.0):
 
     return tmin,sepmin
 
-def find_minimum_t_rpitchspiral(xi,yi, a,d1,d2,eta,rp,x0,y0, npoints,xsign=1.0,ysign=1.0):
+
+def find_minimum_t_rpitchspiral(xi,yi, a,hp,alpha,eta,rp,x0,y0, npoints,xsign=1.0,ysign=1.0):
     '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
 
     t = np.linspace(0.0,10.0,num=npoints)
@@ -101,8 +128,8 @@ def find_minimum_t_rpitchspiral(xi,yi, a,d1,d2,eta,rp,x0,y0, npoints,xsign=1.0,y
     for i in range(npoints):
 
 	r = np.sqrt(xi*xi + yi*yi)
-        x = rpitchspiral_x(t[i], a, d1,d2,eta,r,rp,x0, xsign=xsign)
-        y = rpitchspiral_y(t[i], a, d1,d2,eta,r,rp, y0, ysign=ysign)
+        x = rpitchspiral_x(t[i], a, hp,alpha,eta,r,rp,x0, xsign=xsign)
+        y = rpitchspiral_y(t[i], a, hp,alpha,eta,r,rp, y0, ysign=ysign)
 
         sep = separation(xi, yi, x, y)
 
@@ -139,7 +166,7 @@ def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
     print chisquared, m
     return chisquared
 
-def get_chisquared_rpitchspiral(x,y,a,d1,d2,eta,rp,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+def get_chisquared_rpitchspiral(x,y,a,hp,alpha,eta,rp,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
 
     '''Returns the chi-squared of a r-dependent pitch spiral model given arrays x,y
     Assumes uniform errors'''
@@ -148,22 +175,24 @@ def get_chisquared_rpitchspiral(x,y,a,d1,d2,eta,rp,x0,y0,npoints,xsign=1.0,ysign
     sepmin = np.zeros(len(x))
 
     for i in range(len(x)):        
-        tmin[i], sepmin[i] = find_minimum_t_rpitchspiral(x[i], y[i], a, d1,d2,eta,rp, x0, y0, npoints,xsign=xsign,ysign=ysign)
+        tmin[i], sepmin[i] = find_minimum_t_rpitchspiral(x[i], y[i], a, hp,alpha,eta,rp, x0, y0, npoints,xsign=xsign,ysign=ysign)
 
     return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
 
     
 def opt_chisquared_rpitchspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
 
-    a=m[0]
-    d1 = m[0]
-    d2 = m[1]
-    eta = m[2]
-    rp = m[3]
-    x0 = m[4]
-    y0 = m[5]
+    a = m[0]
+    hp = m[1]
+    alpha = m[2]
+    eta = m[3]
+    rp = m[4]
+    x0 = m[5]
+    y0 = m[6]
 
-    chimin = get_chisquared_rpitchspiral(x,y,a,d1,d2,eta,rp,x0,y0,npoints,xsign,ysign,sigma)
+    chimin = get_chisquared_rpitchspiral(x,y,a,hp,alpha,eta,rp,x0,y0,npoints,xsign,ysign,sigma)
+
+    if(m[0]<0.0 or m[1]<0.0 or m[2]<0.0 or m[3]<0.0 or m[4]<0.0): chimin = 1.0e30
 
     print chimin, m
     return chimin

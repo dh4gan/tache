@@ -48,14 +48,15 @@ ispiral = 0
 
 numcol = 1
 acol = 2
-d1col = 3
-d2col = 4
-rpcol = 5
-xocol = 4
-yocol = 5
-chicol = 6
-xsigncol = 7
-ysigncol = 8
+hpcol = 3
+alphacol = 4
+etacol = 5
+rpcol = 6
+xocol = 7
+yocol = 8
+chicol = 9
+xsigncol = 10
+ysigncol = 11
 
 fitfile = dumpfile+'_spirals.fits'
 npoints = 100
@@ -87,8 +88,9 @@ for filename in filenames:
     zi = data[:,2]
         
     afit = fitdata[ispiral-1,acol]
-    d1fit = fitdata[ispiral-1,d1col]
-    d2fit = fitdata[ispiral-1,d2col]
+    hpfit = fitdata[ispiral-1,hpcol]
+    alphafit = fitdata[ispiral-1,alphacol]
+    etafit = fitdata[ispiral-1,etacol]
     rpfit = fitdata[ispiral-1,rpcol]
     xofit = fitdata[ispiral-1,xocol]
     yofit = fitdata[ispiral-1,yocol]
@@ -98,27 +100,37 @@ for filename in filenames:
     
     # Find minimum and maximum r for spiral plotting
     
-    rmin = np.sqrt(xi[2]*xi[2] + yi[2]*yi[2])
-    rmax = np.sqrt(xi[-1]*xi[-1] + yi[-1]*yi[-1])
+    rmin = np.sqrt(xi[0]*xi[0] + yi[0]*yi[0])
+    rmax = 0.999*rpfit
     
 #    if (tmax-tmin) > 5.0:
 #        print 'Skipping: loopy fit'
 #        continue
     
-    nplot = 100
+    nplot = 1000
     rplot = np.linspace(rmin,rmax,num=nplot)
+    #rplot = np.logspace(np.log10(rmin),np.log10(rmax),num=nplot)
         
     xplot = np.zeros(nplot)
     yplot = np.zeros(nplot)
-    thetaplot[i] = np.zeros(nplot)
+    thetaplot = np.zeros(nplot)
+    pitchplot = np.zeros(nplot)
+    
     for i in range(nplot):
         
-        xplot[i],yplot[i],thetaplot[i] = rpitchspiral_x(rplot[i], afit,d1fit,d2fit,rpfit,xofit,yofit,xsign=xsignfit,ysign=ysignfit)        
+        xplot[i],yplot[i],thetaplot[i],pitchplot[i],b = rpitchspiral_theta(rplot[i], afit,hpfit,alphafit,etafit,rpfit,xofit,yofit,xsign=xsignfit,ysign=ysignfit)        
         
-    ax1.plot(xplot,yplot, color='red')
+        print rmin,rmax,rplot[i],afit,b,pitchplot[i]*180.0/np.pi,thetaplot[i]
+    print afit,hpfit,etafit,rpfit,xofit,yofit
+    ax1.scatter(xplot,yplot, color='red')
     ax1.scatter(xi,yi, color='green', marker='x')
     
-#plt.show()    
+
+fig2 = plt.figure()
+ax2 = fig2.add_subplot(111)
+ax2.set_yscale('log')
+ax2.plot(rplot,pitchplot*180.0/np.pi)
+plt.show()    
 fig1.savefig(dumpfile+'_rpitchspirals_fitted.png')    
     
         

@@ -9,7 +9,7 @@ import filefinder as ff
 import numpy as np
 #import matplotlib.pyplot as plt
 import sys
-from io_spiral import opt_chisquared_logspiral,logspiral_x,logspiral_y,find_minimum_t_logspiral
+from io_spiral import opt_chisquared_rpitchspiral
 import scipy.optimize
 
 #import corner as c
@@ -57,13 +57,13 @@ for dumpfile in dumpfiles:
         yi = data[:,1]
 
 	# Make initial guess
-	# m = [a,d1,d2,eta,rp,x0,y0]
+	# m = [a,hp,alpha,eta,rp,x0,y0]
 
-        m = np.zeros(4)
-        m[0] = 20.0
-        m[1] = 10.0
-        m[2] = 1.5
-        m[3] = 0.25    
+        m = np.zeros(7)
+        m[0] = 150.0
+        m[1] = 1.0
+        m[2] = 2.0
+        m[3] = 1.0    
 	m[4] = 400.0
 	m[5] = 0.0
 	m[6] = 0.0
@@ -72,7 +72,7 @@ for dumpfile in dumpfiles:
         xsign = 1.0
         ysign = -1.0
 
-        mopt = scipy.optimize.minimize(opt_chisquared_logspiral,m,args=(xi,yi,npoints,xsign,ysign),method='Nelder-Mead') 
+        mopt = scipy.optimize.minimize(opt_chisquared_rpitchspiral,m,args=(xi,yi,npoints,xsign,ysign),method='Nelder-Mead') 
 
         print mopt
 
