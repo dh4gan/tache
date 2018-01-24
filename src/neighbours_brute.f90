@@ -4,13 +4,16 @@ subroutine neighbours_brute
   ! This counts accreted particles and pointmasses too
   use sphdata
   use sphneighbourdata
+  use tachedata, only: nelement
+
+  implicit none
 
  integer :: i,j
 
   real :: hi,hj, hmean, sep,percent
   real, parameter :: tiny = 1.0e-34
 
-  print*, 'Beginning brute force search for neighbours'
+  print*, 'Beginning brute force search for neighbours ',nelement
   print*, "------------------------------------------------------------------------"
 
   !$OMP PARALLEL &

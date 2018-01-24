@@ -31,7 +31,7 @@ module tachedata
   ! 'o' - neighbours found by building an octree (O(N log N))
   ! 'b' - neighbours found by brute force (O(N^2))
 
-  character(1),parameter :: use_octree_grid = 'g' 
+  character(1),parameter :: use_octree_grid = 'b'
 
   ! Parameter decides how gravitational force is calculated
   ! 'p' - if potential exists, take its derivative

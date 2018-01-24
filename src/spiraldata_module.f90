@@ -389,8 +389,13 @@ character(len=100) :: dumpfile,memberfile
 memberfile = trim(dumpfile)//'_spiralmembers.dat'
 
 OPEN(10,file=memberfile)
-write(10,*) (eigenelement(i),i=1,nelement)
-write(10,*) (spiralmember(i),i=1,nelement)
+
+do i=1,nelement
+   write(10,*) eigenelement(i), xyz(1:3,i), spiralmember(i)
+enddo
+
+!write(10,*) (eigenelement(i),i=1,nelement)
+!write(10,*) (spiralmember(i),i=1,nelement)
 close(10)
 
 end subroutine write_spiralmember_data

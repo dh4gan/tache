@@ -27,7 +27,7 @@ use sphdata
 use tachedata,only: nelement
 
 implicit none 
-integer :: check, rcheck,skip
+integer :: i,check, rcheck,skip
 character(100) :: filename
 
 ! No small dumps to read
@@ -73,6 +73,13 @@ skip =0
       if(nblocks>1) nelement = nelementtot
       close(10)
 
+      print*, 'NELEMENT ', nelement
+      allocate(isort(nelement))
+      allocate(iorig(nelement))
+      do i=1,nelement
+         isort(i) = i
+         iorig(i) = i
+      enddo
 return 
 END SUBROUTINE rdump_sphNG_iab
 
