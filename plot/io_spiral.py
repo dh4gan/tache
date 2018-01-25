@@ -15,7 +15,7 @@ def logspiral_x(t,a,b,x0,xsign=1):
     return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
 # Overloaded function so that a single array of model parameters can be passed
-def logspiral_x(t,m,xsign=1):
+def logspiral_xm(t,m,xsign=1):
     m[0] = a
     m[1] = b
     m[2] = x0
@@ -33,7 +33,7 @@ def logspiral_d2x(t,a,b,x0,xsign=1):
 def logspiral_y(t,a,b,y0,ysign=1):    
     return ysign*a*np.exp(b*t)*np.sin(t) + y0
 
-def logspiral_y(t,m,ysign=1):
+def logspiral_ym(t,m,ysign=1):
     m[0] = a
     m[1] = b
     m[3] = y0
@@ -93,7 +93,7 @@ def rpitchspiral_theta(r,a,hp,alpha,eta,rp,x0,y0,xsign=1,ysign=1):
     y = ysign*r*np.sin(theta)
     return x,y,theta,pitch,b
 
-def rpitchspiral_theta(r,m,xsign=1,ysign=1):
+def rpitchspiral_thetam(r,m,xsign=1,ysign=1):
     m[0] = a
     m[1] = hp
     m[2] = alpha
@@ -111,7 +111,7 @@ def rpitchspiral_x(t,a,hp,alpha,eta,r,rp,x0,xsign=1):
 	# Now compute spiral x position
 	return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
-def rpitchspiral_x(t,m,r,xsign=1):
+def rpitchspiral_xm(t,m,r,xsign=1):
     m[0] = a
     m[1] = hp
     m[2] = alpha
@@ -129,7 +129,7 @@ def rpitchspiral_y(t,a,hp,alpha,eta,r,rp,y0,ysign=1):
     # Now compute spiral y position
     return ysign*a*np.exp(b*t)*np.sin(t) + y0
 
-def rpitchspiral_y(t,m,r,xsign=1):
+def rpitchspiral_ym(t,m,r,xsign=1):
     m[0] = a
     m[1] = hp
     m[2] = alpha

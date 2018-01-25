@@ -9,7 +9,7 @@ import filefinder as ff
 import numpy as np
 #import matplotlib.pyplot as plt
 import sys
-from io_spiral import opt_chisquared_logspiral,logspiral_x,logspiral_y,find_minimum_t_logspiral
+from io_spiral import opt_chisquared_logspiral
 import scipy.optimize
 
 #import corner as c
