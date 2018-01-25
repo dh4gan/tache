@@ -1,8 +1,8 @@
 # Written 9/10/14 by dh4gan
-# Code reads in  output "eigen" file from sph_tidal_tensor
+# Code reads in  output eigenvalue and eigenvector data from tache
 # Applies a user-defined threshold to the particles' tensor eigenvalues
-# to classify the region they inhabit
-# Classification is plotted in colour-coded format
+# then computes filament direction and sheet normal vectors
+# Also computes angle between these vectors...
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -44,7 +44,6 @@ threshold = input("What is the threshold for classification? ")
 print "Reading eigenvalue file ", valuefile
 
 nelement,x,y,z,eigenpart,eigenvalues = io.read_eigenvalue_file(valuefile)
-
 
 # Read in eigenvector file
 
@@ -90,8 +89,7 @@ while(tryagain!='n'):
         
             ifilament = np.argmin(eigenvalues[i,:])
         
-            eigvec = eigenvectors[ifilament,:,i]                    
-            
+            eigvec = eigenvectors[ifilament,:,i]                                
             
             filamentvectors.append(eigvec)
             xfil.append(x[i])
@@ -221,15 +219,11 @@ while(tryagain!='n'):
     
     maxwell_params = maxwell.fit(angles[np.logical_not(np.isnan(angles))])
     rayleigh_params = rayleigh.fit(angles[np.logical_not(np.isnan(angles))])
-    #rice_params = rice.fit(0.0,angles[np.logical_not(np.isnan(angles))])
-    
+        
     x = np.linspace(0.0,np.pi, 100)
     
     maxwell_curve = maxwell.pdf(x,loc=maxwell_params[0], scale=maxwell_params[1])
     rayleigh_curve = rayleigh.pdf(x,loc=rayleigh_params[0],scale=rayleigh_params[1])    
-    
-    #angles = np.nan_to_num(angles)
-    
     
     print 'Done - Fit Parameters: ' 
     print 'Maxwell Distribution: ',maxwell_params    
