@@ -9,7 +9,7 @@ import filefinder as ff
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from io_spiral import get_chisquared_rpitchspiral,rpitchspiral_x,rpitchspiral_y,find_minimum_t_rpitchspiral
+from io_spiral import opt_chisquared_rpitchspiral
 
 import corner as c
 
@@ -17,39 +17,20 @@ npoints = 100 # number of evaluations to find point distance from spiral model
 nburn = 1000 # Burn in sequence length
 nanalyse = 10 # Only fit this many arms
 nsamples = int(1.0e5) # Total number of MCMC samplings
+nsubsample = 10 # Rate of subsampling of MCMC 
+
+# R-dependent pitch spiral has 7  model parameters
+#m = [a,hp,alpha,eta,rp,x0,y0]
+nparams = 7
 
 # Parameters initially sampled uniformly during burn in period (flat prior)
 
-amin = 1.0
-amax = 100.0
-
-d1min = 0.0
-d1max = 1.5
-d2min = -5.0
-d2max = 5.0
-
-etamin = 0.01
-etamax = 0.5
-
-rpmin = 300.0
-rpmax = 500.0
-
-x0min = -10.0
-x0max = 10.0
-
-y0min = -10.0
-y0max = 10.0
+mmin = [1.0,   0.0, -5.0, 0.01, 300.0,-10.0,-10.0]
+mmax = [100.0, 1.5,  5.0,  0.5, 500.0, 10.0, 10.0]
 
 # After burn in, MC sampling from multivariate Gaussian
 
-sigma_a = 0.01
-sigma_d1 = 0.01
-sigma_d2 = 0.01
-sigma_x0 = 0.01
-sigma_y0 = 0.01
-sigma_rp = 1.0
-sigma_eta = 0.01    
-
+sigma_m = [0.01, 0.01, 0.01, 0.01, 1.0, 0.01,0.01]
 
 # Load dumpfile names from spirallist.txt
 dumpfiles = np.loadtxt('spirallist.txt', dtype='string',skiprows=1)
@@ -68,20 +49,7 @@ for dumpfile in dumpfiles:
     if dumpfile == ' ': continue
     # Get list of spiral files
 
-
     filenames = ff.find_sorted_local_input_fileset(dumpfile+'_spiral*.dat')
-
-    # Set up file containing all fit parameters
-
-    f_fit = open(dumpfile+'_spirals.MCMCfits','w')
-    line = '# Fits for individual spirals assuming pitch=pitch(r)'
-
-    # Set up final plot (data + fits)
-
-#    fig1=plt.figure()
-#    ax1 = fig1.add_subplot(111)
-#    ax1.set_xlabel('x (AU)')
-#    ax1.set_ylabel('y (AU)')
 
     ispiral = 0
 
@@ -101,39 +69,22 @@ for dumpfile in dumpfiles:
         zi = data[:,2]
         
         # Begin MCMC process
-    
-        avalues = []
-        d1values = []
-	d2values = []
-	rpvalues = []
-        etavalues = []
-        x0values = []
-        y0values = []
+
+        mvalues = []
         chivalues = []
         xsignvalues = []
         ysignvalues = []
     
         isample = 0
-    
-        ainit = 1.0
-	d1init = 1.0
-	d2init = 0.0
-	rpinit = 400.0
-        etainit = 0.25
-        x0init = 0.0
-        y0init = 0.0
+ 
+        minit = [1.0, 1.0, 0.0, 400.0, 0.25, 0.0, 0.0]
         xsigninit= 1.0
         ysigninit = 1.0
     
-        chimin = get_chisquared_rpitchspiral(xi, yi, ainit, d1init, d2init, etainit,rpinit, x0init, y0init, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1)    
+        chimin = opt_chisquared_rpitchspiral(minit,xi, yi, npoints,xsign=xsigninit, ysign=ysigninit,sigma=0.1,verbose=False)    
     
-        a=ainit
-        d1 = d1init
-	d2 = d2init
-        eta = etainit
-	rp = rpinit
-        x0=x0init
-        y0=y0init
+        m = minit
+        mnext = minit
         xsign = xsigninit
         ysign = ysigninit
         
@@ -142,29 +93,19 @@ for dumpfile in dumpfiles:
         
         print 'Beginning MCMC spiral curve fitting '
         print 'Burning in: burn sequence length is ',nburn
-        while isample < nsamples:
+        while isample < nsamples+nburn:
             
             # choose parameters for next sample
         
             # Explore the parameter space widely initially
-            if(isample < nburn):                
-                anext = (amax-amin)*np.random.rand() + amin
-                d1next = (d1max-d1min)*np.random.rand() + d1min
-		d2next = (d2max-d2min)*np.random.rand() + d2min
-                etanext = (etamax-etamin)*np.random.rand() + etamin
-		rpnext = (rpmax-rpmin)*np.random.rand() + rpmin
-                x0next = (x0max-x0min)*np.random.rand() + x0min
-                y0next = (y0max-y0min)*np.random.rand() + y0min
+            if(isample < nburn):  
+                for k in range(nparams):
+                    mnext[k] = (mmax[k]-mmin[k])*np.random.rand() + mmin[k]
             
             # After burn in, choose next variable from multivariate Gaussian
             else:
-                anext = np.random.randn()*sigma_a + a
-                d1next = np.random.randn()*sigma_d1 + d1
-		d2next = np.random.randn()*sigma_d2 + d2
-		rpnext = np.random.randn()*sigma_rp + rp
-                etanext = np.random.randn()*sigma_eta + eta
-                x0next = np.random.randn()*sigma_x0 + x0
-                y0next = np.random.randn()*sigma_y0 + y0
+                for k in range(nparams):
+                    mnext[k] = np.random.randn()*sigma_m[k] + m[k]
                     
             xsignnext = 1.0
             randtest = np.random.rand()
@@ -179,7 +120,7 @@ for dumpfile in dumpfiles:
             #xsignnext = 1.0
             #ysignnext = -1.0
     
-            chinext = get_chisquared_rpitchspiral(xi, yi, anext, d1next,d2next,etanext,rpnext, x0next, y0next, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.5)
+            chinext = opt_chisquared_rpitchspiral(mnext,xi, yi, npoints, xsign=xsignnext, ysign=ysignnext,sigma=0.1,verbose=False)
                         
             # Calculate likelihood ratio
         
@@ -193,42 +134,37 @@ for dumpfile in dumpfiles:
             if(randtest<ratio):
                             
                 chimin = chinext
-                a = anext
-                d1 = d1next
-		d2 = d2next
-                eta = etanext
-		rp = rpnext
-                x0 = x0next
-                y0= y0next
+                m = mnext
+#                a = anext
+#                d1 = d1next
+#		d2 = d2next
+#                eta = etanext
+#		rp = rpnext
+#                x0 = x0next
+#                y0= y0next
                 xsign = xsignnext
                 ysign = ysignnext
                 
-            if(chimin<globalchimin):
-                globalchimin = chimin
-                globalamin = a 
-                globald1min = d1
-		globald2min = d2
-                globaletamin = eta
-		globalrpmin = rp 
-                globalx0min = x0
-                globaly0min = y0
+                if(chimin<globalchimin):
+                    globalchimin = chimin
+                    global_m_min = m
+#                globalamin = a 
+#                globald1min = d1
+#		globald2min = d2
+#                globaletamin = eta
+#		globalrpmin = rp 
+#                globalx0min = x0
+#                globaly0min = y0
                 globalxsign = xsign
                 globalysign = ysign
             
-            if(isample > nburn):
+                if(isample > nburn):
  
-                naccept = naccept + 1           
-                print 'Sample: ', isample,a,d1,d2,eta,rp,x0,y0,xsign,ysign,chimin
-                avalues.append(a)
-                d1values.append(d1)
-		d2values.append(d2)
-                etavalues.append(eta)
-		rpvalues.append(rp)
-                x0values.append(x0)
-                y0values.append(y0)
-                xsignvalues.append(xsign)
-                ysignvalues.append(ysign)
-                chivalues.append(chimin)
+                    naccept = naccept + 1  
+
+                    print 'Sample: %5i %+4.2e %+4.2e %+4.2e %+4.2e %+4.2e %+4.2e +%4.2e %i %i %4.2e' % (isample,m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],xsign,ysign,chimin)  
+                    mvalues.append(m)                
+                    chivalues.append(chimin)
             
         # Save values to MCMC output file
     
@@ -239,43 +175,39 @@ for dumpfile in dumpfiles:
         nsubsample = 10
         print 'Subsampling by a factor of ',nsubsample
     
-        nMCMC = len(avalues)                
+        nMCMC = len(mvalues)                
         MCMCfile = filename+'.MCMC'
     
-        allsamples = np.array((avalues,d1values,d2values,etavalues,rpvalues,x0values,y0values))    
-        allsamples = np.transpose(allsamples)
+        mvalues = np.array(mvalues)
     
         # Subsample the total
+ 
+        msubsample = mvalues[::nsubsample,:]
     
-        print allsamples.shape
-        allsamples = allsamples[::nsubsample,:]
-    
-    
-        print allsamples.shape
-    
-        np.savetxt(MCMCfile, allsamples)
-    
-        #f_obj = open(MCMCfile,'w')
-    
-        #for i in range(nMCMC):
-        #    line = str(avalues[i])+ '  '+str(bvalues[i]) + '   '+str(x0values[i]) + '   '+str(y0values[i]) + '   '+str(chivalues[i])
-        #    line = line + '   '+str(xsignvalues[i])+'    '+str(ysignvalues[i])+ ' \n'
-        #    f_obj.write(line)
+        np.savetxt(MCMCfile, msubsample)
         
-        #f_obj.close()
-    
-    
         print 'MCMC minimum: '
-        print globalamin, globald1min,globald2min,globaletamin, globalrpmin, globalx0min, globaly0min, globalxsign,globalysign
+        print global_m_min[:],globalxsign, globalysign
     
-        # Write best fit to file
+        # Write best fit to array for later file write
+
+        spiralfit = global_m_min
+        spiralfit.insert(0,len(xi))
+        spiralfit.insert(0,ispiral)
+        spiralfit.append(chimin)
+        spiralfit.append(globalxsign)
+        spiralfit.append(globalysign)
+
+        MCMCfits.append(spiralfit)
     
-        line = str(ispiral)+'   '+str(len(xi))+ '  '+ str(globalamin)+ '  '+str(globald1min) + '  '+str(globald2min) + '    ' +str(globaletamin)+'   '+str(globalrpmin)+ '   '+str(globalx0min) + '   '+str(globaly0min) + '   '+str(chimin)
-        line = line + '   '+str(globalxsign)+'    '+str(globalysign)+ ' \n'
+
+    # end of loop over spirals
+
+    # Write MCMC fit parameters to file
+    outputfile = dumpfile+'_spirals.MCMCfits'
+    outputformat = '%3i %3i'
+    outputformat = outputformat +' %+7.5e '*(nparams+1)+'%i %i'
     
-        f_fit.write(line)
-    
-    
-    f_fit.close()
+    np.savetxt(outputfile,MCMCfits,header="Best fitting parameters for log spiral via MCMC \n",fmt=outputformat)
     
     
