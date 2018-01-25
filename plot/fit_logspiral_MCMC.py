@@ -171,6 +171,7 @@ for dumpfile in dumpfiles:
             
         print 'MCMC minimum: '
         print global_m_min[:], globalxsign,globalysign
+<<<<<<< HEAD
     
         # Write best fit to array for later file write
 
