@@ -37,11 +37,7 @@ for dumpfile in dumpfiles:
 
     filenames = ff.find_sorted_local_input_fileset(dumpfile+'_spiral*.dat')
 
-    # Set up file containing all fit parameters
-
-    f_fit = open(dumpfile+'_spirals.chimin','w')
-    line = '# Minimised chisquared for individual spirals'
-
+    # Set up array to hold fit parameters
     chiminfits=[]
     ispiral = 0
 
@@ -75,7 +71,7 @@ for dumpfile in dumpfiles:
 
 
     print chiminfits
-    outputfile = dumpfile+'_spirals.chimin'
+    outputfile = dumpfile+'_spirals.chiminfits'
     np.savetxt(outputfile,chiminfits,header="Minimum chisquared fits for log spirals \n")
 
 print "Done"                    
