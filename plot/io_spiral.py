@@ -202,13 +202,13 @@ def get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0
     tmin = np.zeros(len(x))
     sepmin = np.zeros(len(x))
         
-    for i in range(len(x)):        
+    for i in range(len(x)):     
         tmin[i], sepmin[i] = find_minimum_t_logspiral(x[i], y[i], a, b, x0, y0, npoints,xsign=xsign,ysign=ysign)    
     
     return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
 
 
-def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
     '''Wrapper for scipy.optimize: the chi-squared of a logarithmic spiral model given arrays x,y
     Assumes uniform errors'''
     
@@ -216,9 +216,9 @@ def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
     b = m[1]
     x0 = m[2]
     y0 = m[3]
-  
+
     chisquared = get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign,ysign,sigma)
-    print chisquared, m
+    if(verbose):print chisquared, m
     return chisquared
 
 def get_chisquared_rpitchspiral(x,y,a,hp,alpha,eta,rp,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
@@ -235,7 +235,7 @@ def get_chisquared_rpitchspiral(x,y,a,hp,alpha,eta,rp,x0,y0,npoints,xsign=1.0,ys
     return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
 
     
-def opt_chisquared_rpitchspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+def opt_chisquared_rpitchspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
 
     a = m[0]
     hp = m[1]
@@ -249,5 +249,5 @@ def opt_chisquared_rpitchspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
 
     if(m[0]<0.0 or m[1]<0.0 or m[2]<0.0 or m[3]<0.0 or m[4]<0.0): chimin = 1.0e30
 
-    print chimin, m
+    if(verbose):print chimin, m
     return chimin
