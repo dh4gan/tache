@@ -34,8 +34,26 @@ Requirements:
 
 Execution:
 ----------
+To compile the code, navigate to the src/ directly and type
+
+`> make`
+
+to compile the main program
+
 Once compiled, the code is executed with the command
 
 `> ./tache`
 
 The code reads in a single input parameter file `tache.params`, which should be modified before execution
+
+The accompanying `spiralfind` program is compiled via
+
+`>make spiralfind`
+
+and run by
+
+`>./spiralfind`
+
+Which reads in `spiralfind.params` upon execution.
+
+Example parameter files for both `tache` and `spiralfind` are available in the `paramfiles` directory
