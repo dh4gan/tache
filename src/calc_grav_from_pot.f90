@@ -1,5 +1,8 @@
 SUBROUTINE calc_grav_from_pot
-  ! Subroutine calculates gravitational forces using particle potentials for all particles
+  !*************************************************************
+  ! Subroutine calculates gravitational forces of SPH particles
+  ! using particle potential
+  !*************************************************************
 
   use sphdata
   use sphneighbourdata
@@ -29,6 +32,7 @@ SUBROUTINE calc_grav_from_pot
         counter = counter +1.0
      endif   
 
+     ! Loop over all neighbours of ielement
      !$OMP PARALLEL &
      !$OMP shared(ielement, nelement,poten,gravxyz) &
      !$OMP private(jpart,ix) 

@@ -1,4 +1,8 @@
 SUBROUTINE make_octree(sphfile)
+  !******************************************************
+  ! Builds an octree from the SPH dataset
+  ! (used for neighbour finding and gravity calculations)
+  !*******************************************************
 
   USE sphdata	
   USE sphneighbourdata

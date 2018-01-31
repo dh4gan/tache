@@ -52,8 +52,7 @@ end interface
           xyzmh(3,ielement), range)
      
      ! Test for neighbourship all particles in the particle list
-     
-     !print*, ielement, ncellrange, nelementiclelist
+         
      !$OMP PARALLEL &
      !$OMP shared(nelementiclelist,particlelist,iphase,hi,ielement)&
      !$OMP shared(xyzmh,nneigh,neighb) &
@@ -74,10 +73,7 @@ end interface
            sep = (xyzmh(1,ielement) - xyzmh(1,jelement))**2 + &
                 (xyzmh(2,ielement) - xyzmh(2,jelement))**2 + &
                 (xyzmh(3,ielement) - xyzmh(3,jelement))**2 + tiny
-           sep = sqrt(sep)
-           !print*, xyzmh(:,ielement)
-           !print*, xyzmh(:,jelement)
-           !print*,ielement,jelement, member(ielement), member(jelement), hi, hj, sep/hmean
+           sep = sqrt(sep)        
            
            !	if particle j in neighbour sphere, then add to neighbour list
            if(sep<2.0*hmean.and.nneigh(ielement)<neighmax) then
@@ -95,8 +91,7 @@ end interface
      if(nneigh(ielement) < 20) then
         print*, 'nneigh for particle ',ielement,' is ',nneigh(ielement), neighmax
         print*, 'Particle type: ', iphase(ielement)
-        print*, 'Number of cells/particles tested ', ncellrange, nelementiclelist
-        !print*, 'xyzmh: ', xyzmh(:,ielement)
+        print*, 'Number of cells/particles tested ', ncellrange, nelementiclelist       
      endif
      
      

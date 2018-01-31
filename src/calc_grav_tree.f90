@@ -1,7 +1,8 @@
 SUBROUTINE calc_grav_tree
-
-    ! Subroutine calculates gravitational forces and potentials for all particles
-    ! It uses pre-generated octree to approximate gravity at distances defined by Multipole Acceptance Criterion (MAC)
+  ! Subroutine calculates gravitational forces and potentials 
+  ! for all particles
+  ! It uses a pre-generated octree to approximate gravity at distances 
+  ! defined by Multipole Acceptance Criterion (MAC)
 
     use sphdata
     use sphneighbourdata
@@ -10,7 +11,7 @@ SUBROUTINE calc_grav_tree
 
     implicit none
 
-    real,dimension(3) :: gravi,drcell, drgeom
+    real, dimension(3) :: gravi,drcell, drgeom
     real, parameter :: mactheta = 0.01
 
     integer, allocatable, dimension(:) :: used
@@ -51,6 +52,7 @@ SUBROUTINE calc_grav_tree
         poteni = 0.0
         used(:) = 0
     
+        ! Now loop over nodes of the tree
 !$OMP PARALLEL &
 !$OMP shared(ielement,n_node,m_node,dr_node,com_node,r_node, used,xyzmh)&
 !$OMP shared(n_occ, occ,n_child, poten, gravxyz) &
@@ -159,21 +161,21 @@ SUBROUTINE calc_grav_tree
          !print*, 'Particle: ',ielement, poten(ielement), gravxyz(:,ielement)
         !  Add contribution to the potential from pointmasses
 
-!!$        do k=1,nptmass
-!!$
-!!$            jpart = listpm(k)
-!!$
-!!$            if(jpart==ielement) cycle
-!!$
-!!$            sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
-!!$                (xyzmh(2,ielement) - xyzmh(2,jpart))**2 +&
-!!$                (xyzmh(3,ielement) - xyzmh(3,jpart))**2
-!!$
-!!$            sep =sqrt(sep)
-!!$
-!!$            poten(ielement) = poten(ielement) - xyzmh(4,jpart)/sep
-!!$
-!!$        enddo
+        do k=1,nptmass
+
+            jpart = listpm(k)
+
+            if(jpart==ielement) cycle
+
+            sep = (xyzmh(1,ielement) - xyzmh(1,jpart))**2 + &
+                (xyzmh(2,ielement) - xyzmh(2,jpart))**2 +&
+                (xyzmh(3,ielement) - xyzmh(3,jpart))**2
+
+            sep =sqrt(sep)
+
+            poten(ielement) = poten(ielement) - xyzmh(4,jpart)/sep
+
+        enddo
 !        print*, 'Particle ', ielement, ': Potential - ', poten(ielement), 'Force: ',gravxyz(:,ielement)
     ENDDO
     ! End loop over all particles

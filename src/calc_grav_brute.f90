@@ -1,7 +1,7 @@
 SUBROUTINE calc_grav_brute
   ! Subroutine calculates gravitational forces and potentials for all particles
-  ! It uses brute force to calculate forces and potentials for particles outside
-  ! the smoothing volume
+  ! It uses brute force O(N^2) to calculate forces and potentials 
+  ! for particles outside the smoothing volume
 
   use sphdata
   use sphneighbourdata
@@ -13,7 +13,7 @@ SUBROUTINE calc_grav_brute
   real,dimension(3) :: gravi
 
   integer :: ielement, jpart,k,ix
-  real :: meanpot,sdpot, percent,counter
+  real :: meanpot,sdpot, percent,increment
 
   allocate(gravxyz(3,nelement))
   allocate(poten(nelement))
@@ -24,18 +24,16 @@ SUBROUTINE calc_grav_brute
   isoft = 0
 
   percent = 0.0
-  counter = 1.0
+  increment = 1.0
+
   do ielement = 1,nelement
 
-     percent = REAL(ielement)/REAL(nelement)*100.0
-
-     if(percent>counter)then
-        print*, counter,'% complete'
-        counter = counter +1.0
-     endif
+     call element_percent_complete(ielement,nelement,percent,increment)
 
      gravi(:) = 0.0
      poteni = 0.0
+
+     ! Loop over all elements
 
      !$OMP PARALLEL &
      !$OMP shared(ielement, nelement,poten,gravxyz) &
@@ -45,6 +43,7 @@ SUBROUTINE calc_grav_brute
 
         if(ielement==jpart) cycle
 
+        ! Compute the forces between ielement and jpart
         call particle_forces(ielement,jpart,poteni,gravi)
 
         poten(ielement) = poten(ielement) + poteni
@@ -57,7 +56,6 @@ SUBROUTINE calc_grav_brute
      !$OMP END DO
      !$OMP END PARALLEL
      ! End of loop over jpart
-
 
 
      !  Add contribution to the potential from pointmasses
@@ -79,6 +77,7 @@ SUBROUTINE calc_grav_brute
      enddo
      !print*, 'Particle ', ielement, ': Potential - ', poten(ielement), 'Force: ',gravi(:)
   ENDDO
+
   ! End loop over all particles
 
   ! Calculate mean and standard deviation of potential

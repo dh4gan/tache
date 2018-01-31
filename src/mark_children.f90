@@ -1,8 +1,10 @@
 SUBROUTINE mark_children(ipar,used)
-! Written by dh4gan
+!**************************************************************
+! Written 01/03/2016 by dh4gan
 ! Subroutine marks all the descendants of node ipar as 'used'
 ! Subroutine begins by constructing a list of all descendants
 ! Then marks all nodes in the list
+!**************************************************************
 
 use sphneighbourdata
 

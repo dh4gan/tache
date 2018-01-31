@@ -1,8 +1,11 @@
 SUBROUTINE read_neighbours(neighbourfile)
-! Subroutine reads in a neighbours file
+!*********************************************************************
+! Subroutine reads in a neighbours file previously outputted by tache
+!*********************************************************************
+
   use sphdata
   use sphneighbourdata
-	use tachedata,only: neigen,nelement
+  use tachedata,only: neigen,nelement
   implicit none
 
   integer :: i,j,neighcheck

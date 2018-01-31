@@ -1,4 +1,5 @@
 SUBROUTINE make_grid_sphdata(hmean)
+  !*****************************************************
   ! Written 17/2/15 by dh4gan
   ! This subroutine makes a regular grid in x,y,z and 
   ! bins the particles accordingly
@@ -10,6 +11,7 @@ SUBROUTINE make_grid_sphdata(hmean)
   
   ! icell = int((xi-xmin)/dgrid +1) = int((xi+xmax)/dgrid +1)
   ! (and so on for jcell, kcell (y,z)
+  !******************************************************
 
   use sphdata
   use sphneighbourdata
@@ -52,21 +54,6 @@ SUBROUTINE make_grid_sphdata(hmean)
   print*, 'ny = ', ngridy
   print*, 'nz = ', ngridz
   print*, 'Total cell no.: ',ncells
-
-!!$  ! Set up grid IDs
-!!$
-!!$  counter = 0
-!!$
-!!$  !allocate(cellID(ngridx,ngridy,ngridz))
-!!$
-!!$  do ix=1,ngridx
-!!$     do iy = 1,ngridy
-!!$        do iz = 1,ngridz
-!!$           counter =counter +1
-!!$           cellID(ix,iy,iz) = counter
-!!$        enddo
-!!$     enddo
-!!$  enddo
 
   ! Set up grid variables
 

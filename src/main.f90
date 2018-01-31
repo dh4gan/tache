@@ -1,13 +1,14 @@
 PROGRAM tache
+  !***********************************************************
   ! This program reads in hydrodynamic simulation files and 
   ! performs tensor classification
   ! Eigenvalues of the tensor determine what environment 
-  ! an hydrodynamic fluid element is in
-    
+  ! a hydrodynamic fluid element is in
+  !***********************************************************
+
   use tachedata
 
-  implicit none
-      
+  implicit none      
 
   integer :: ifile
   logical :: skipdump

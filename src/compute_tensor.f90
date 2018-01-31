@@ -1,8 +1,7 @@
 subroutine compute_tensor(ifile)
-!
-! Subroutine handles the computation of derivatives that form the tensor
-! to be classified
-!
+!***********************************************************************
+! Subroutine handles the computation of both tensors
+!***********************************************************************
 
 use tachedata
 implicit none
@@ -33,6 +32,7 @@ if(filetype=='SPH') then
       
       tensor_element(:,:) =0.0
 
+      ! Choose which tensor to compute
       if(tensorchoice=='velocity') then
          call calc_velocityshear_tensor(ielement,tensor_element)
       else if(tensorchoice=='tidal') then

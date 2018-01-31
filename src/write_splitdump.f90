@@ -1,23 +1,23 @@
 subroutine write_splitdump(ifile)
+  !*********************************************************************
+  ! Splits up dump into four dumps according to element classification
+  ! (Currently only writes SPH dumps in sphNG_wkmr format)
+  !*********************************************************************
 
-use tachedata
-use sphdata
+  use tachedata
+  use sphdata
 
-implicit none
+  implicit none
 
-integer, intent(in) :: ifile
-integer :: i,iclass,ipart,check,counter,nparthold,nptmasshold
-integer,allocatable,dimension(:) :: isorthold,iphasehold,istepshold
-real,allocatable,dimension(:) :: rhohold,dgravhold
-real,allocatable,dimension(:,:) :: xyzmhhold,vxyzuhold
-
-real, dimension(3) :: eigensingle
-character(100) :: classfile
-
-!
-! Splits up dump into four dumps according to element classification
-! (Currently only writes SPH dumps in sphNG_wkmr format)
-!
+  integer, intent(in) :: ifile
+  integer :: i,iclass,ipart,check,counter,nparthold,nptmasshold
+  integer,allocatable,dimension(:) :: isorthold,iphasehold,istepshold
+  real,allocatable,dimension(:) :: rhohold,dgravhold
+  real,allocatable,dimension(:,:) :: xyzmhhold,vxyzuhold
+  
+  real, dimension(3) :: eigensingle
+  character(100) :: classfile
+  
 
   prefixes(1) = "clusters"
   prefixes(2) = "filaments"

@@ -1,8 +1,8 @@
 subroutine write_eigendata(ifile)
 
-  !
-  ! Subroutine writes all eigendata to binary files
-  !
+  !**************************************************************
+  ! Subroutine writes all eigenvalue/eigenvector to binary files
+  !**************************************************************
 
   use tachedata
   use sphdata, only: xyzmh,rho,iunique,iphase

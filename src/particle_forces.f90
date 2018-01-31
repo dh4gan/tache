@@ -1,6 +1,8 @@
 SUBROUTINE particle_forces(ielement,jpart, potential, gravforce)
+!**************************************************************************
 ! Calculates contributions to the gravitational potential and force vector
 ! of ielement due to jpart
+!**************************************************************************
 
 use sphdata
 use sphkerneldata

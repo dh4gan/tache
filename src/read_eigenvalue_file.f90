@@ -1,8 +1,7 @@
 subroutine count_eigenvalue_entries(filename,skipdump,n)
-!
-!
-!
-!
+!***************************************************
+! Count the number of entries in an eigenvalue file
+!***************************************************
 
 implicit none
 
@@ -34,6 +33,10 @@ end subroutine count_eigenvalue_entries
 
 
 subroutine read_eigenvalue_file(filename,skipdump,n,eigenelement,xyz,rho,mass,eigenvalues)
+!***********************************
+! Read eigenvalue file
+!***********************************
+
 
 implicit none
 

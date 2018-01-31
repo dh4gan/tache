@@ -1,7 +1,10 @@
 subroutine neighbours_octree
+  !*********************************************************************
   ! Subroutine finds nearest neighbours in radius 2h, using the octree
+  ! (and its axis aligned bounding boxes, AABBs)
   ! h already defined for all particles
   ! This counts accreted particles and pointmasses too
+  !*********************************************************************
 
   use sphdata
   use sphneighbourdata
