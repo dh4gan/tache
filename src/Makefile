@@ -17,6 +17,7 @@ FC     = gfortran
 # For little-endian files use these flags
 FFLAGS = -O3 -frecord-marker=4 -fdefault-real-8 -Wunused -fbounds-check
 
+VPATH = main/ io/ misc/ sph/ spirals/ tensor/
 
 # Create object files:
 #%.o: %.f
