@@ -1,6 +1,8 @@
 TACHE - TensoriAl Classification of Hydrodynamic Elements 
 ===========================================================
 
+[![DOI](https://zenodo.org/badge/109244123.svg)](https://zenodo.org/badge/latestdoi/109244123)
+
 This Fortran code performs tensor classification on finite element hydrodynamics simulations - currently smoothed particle hydrodynamics (SPH) simulations only
 
 Science using these algorithms was first published in Forgan et al (2016), Monthly Notices of the Royal Astronomical Society, Volume 457, Issue 3, p.2501-2513, DOI: 10.1093/mnras/stw103
