@@ -6,7 +6,7 @@ import numpy as np
 
 
 spiralchoices = ['logarithmic','hyperbolic','power','rpitch']
-spiraltexts = ['Logarithmic Spiral', 'Hyperbolic Spiral','Power Spiral' 'r-dependent pitch spiral']
+spiraltexts = ['Logarithmic Spiral', 'Hyperbolic Spiral','Power Spiral', 'r-dependent pitch spiral']
 nspiralchoices = len(spiralchoices)
 nspiralparams = [4,3,4,8]
 
@@ -76,30 +76,6 @@ def logspiral_ym(t,m,ysign=1):
 
     return logspiral_y(t,a,b,y0,ysign=ysign)
     
-#
-# Generate x,y points for a logarithmic spiral curve
-#
-def generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
-    '''Generate x,y, points of a logarithmic spiral'''
-
-    t = np.linspace(tmin,tmax,num=npoints)
-    xspiral = np.zeros(npoints)
-    yspiral = np.zeros(npoints)
-
-    for i in range(npoints):
-        xspiral[i] = logspiral_x(t[i],a,b,x0,xsign=xsign)
-        yspiral[i] = logspiral_y(t[i],a,b,y0,ysign=ysign)
-    
-    return xspiral,yspiral
-
-def generate_logspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
-    '''Generate x,y, points of a logarithmic spiral'''
-    m[0] = a
-    m[1] = b
-    m[2] = x0
-    m[3] = y0
-    return generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
-
 
 # Find the minimum t value for (xi,yi) given spiral parameters (a,b,x0,y0)
 # Multiple local minima possible, must be careful
@@ -125,6 +101,39 @@ def find_minimum_t_logspiral(xi,yi, a,b,x0,y0, npoints,xsign=1.0,ysign=1.0):
         
 
     return tmin,sepmin
+
+
+#
+# Generate x,y points for a logarithmic spiral curve
+#
+def generate_logspiral_curve(xbegin,ybegin,xend,yend,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a logarithmic spiral'''
+
+    tmin, sepmin1 = find_minimum_t_logspiral(xbegin,ybegin,a,b,x0,y0,npoints,xsign=xsign,ysign=ysign)
+
+    tmax, sepmin1 = find_minimum_t_logspiral(xend,yend,a,b,x0,y0,npoints,xsign=xsign,ysign=ysign)
+
+
+    t = np.linspace(tmin,tmax,num=npoints)
+    xspiral = np.zeros(npoints)
+    yspiral = np.zeros(npoints)
+
+    for i in range(npoints):
+        xspiral[i] = logspiral_x(t[i],a,b,x0,xsign=xsign)
+        yspiral[i] = logspiral_y(t[i],a,b,y0,ysign=ysign)
+    
+    return xspiral,yspiral
+
+def generate_logspiral_curvem(xbegin,xend,ybegin,yend,m,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a logarithmic spiral'''
+    a = m[0]
+    b = m[1]
+    x0 = m[2]
+    y0 = m[3]
+    return generate_logspiral_curve(xbegin,xend,ybegin,yend,a,b,x0,y0,xsign,ysign,npoints)
+
+
+
 
 def get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
     '''Returns the chi-squared of a logarithmic spiral model given arrays x,y
@@ -183,8 +192,12 @@ def hypspiral_ym(t,m,ysign=1):
 #
 # Generate x,y points for a hyperbolic spiral curve
 #
-def generate_hypspiral_curve(tmin,tmax,c,x0,y0,xsign=1,ysign=1,npoints=100):
+def generate_hypspiral_curve(xbegin,ybegin,xend,yend,c,x0,y0,xsign=1,ysign=1,npoints=100):
     '''Generate x,y, points of a hyperbolic spiral'''
+
+    tmin, sepmin1 = find_minimum_t_hypspiral(xbegin,ybegin,c,x0,y0,xsign=xsign,ysign=ysign)
+
+    tmax, sepmin1 = find_minimum_t_logspiral(xend,yend,c,x0,y0,xsign=xsign,ysign=ysign)
 
     t = np.linspace(tmin,tmax,num=npoints)
     xspiral = np.zeros(npoints)
@@ -272,9 +285,9 @@ def powspiral_x(t,a,n,x0,xsign=1):
 
 # Overloaded function so that a single array of model parameters can be passed
 def powspiral_xm(t,m,xsign=1):
-    m[0] = a
-    m[1] = n
-    m[2] = x0
+    a = m[0]
+    n = m[1]
+    x0 = m[2]
 
     return powspiral_x(t,a,b,x0,xsign=xsign)
 
@@ -283,35 +296,41 @@ def powspiral_y(t,a,n,y0,ysign=1):
     return ysign*a*pow(t,n)*np.sin(t) + y0
 
 def powspiral_ym(t,m,ysign=1):
-    m[0] = a
-    m[1] = n
-    m[3] = y0
+    a = m[0]
+    n = m[1]
+    y0 = m[3]
 
     return powspiral_y(t,a,b,y0,ysign=ysign)
     
 #
-# Generate x,y points for a logarithmic spiral curve
+# Generate x,y points for a power spiral curve
 #
-def generate_powspiral_curve(tmin,tmax,a,n,x0,y0,xsign=1,ysign=1,npoints=100):
-    '''Generate x,y, points of a logarithmic spiral'''
+def generate_powspiral_curve(xbegin,ybegin,xend,yend,a,n,x0,y0,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a power spiral'''
 
+    nfind = 1000
+    tmin, sepmin1 = find_minimum_t_powspiral(xbegin,ybegin,a,n,x0,y0,nfind,xsign=xsign,ysign=ysign)
+
+    tmax, sepmin2 = find_minimum_t_powspiral(xend,yend,a,n,x0,y0,nfind,xsign=xsign,ysign=ysign)
+
+    print tmin, tmax
     t = np.linspace(tmin,tmax,num=npoints)
     xspiral = np.zeros(npoints)
     yspiral = np.zeros(npoints)
 
     for i in range(npoints):
-        xspiral[i] = logspiral_x(t[i],a,n,x0,xsign=xsign)
-        yspiral[i] = logspiral_y(t[i],a,n,y0,ysign=ysign)
+        xspiral[i] = powspiral_x(t[i],a,n,x0,xsign=xsign)
+        yspiral[i] = powspiral_y(t[i],a,n,y0,ysign=ysign)
     
     return xspiral,yspiral
 
-def generate_powspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+def generate_powspiral_curvem(xbegin,xend,ybegin,yend,m,xsign=1,ysign=1,npoints=100):
     '''Generate x,y, points of a logarithmic spiral'''
-    m[0] = a
-    m[1] = n
-    m[2] = x0
-    m[3] = y0
-    return generate_powspiral_curve(tmin,tmax,a,n,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
+    a = m[0]
+    n = m[1]
+    x0 = m[2]
+    y0 = m[3]
+    return generate_powspiral_curve(xbegin,xend,ybegin,yend,a,n,x0,y0,xsign,ysign,npoints)
 
 
 # Find the minimum t value for (xi,yi) given spiral parameters (a,b,x0,y0)
@@ -320,7 +339,7 @@ def generate_powspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
 def find_minimum_t_powspiral(xi,yi, a,n,x0,y0, npoints,xsign=1.0,ysign=1.0):
     '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
     
-    t = np.linspace(0.0,10.0,num=npoints)
+    t = np.linspace(0.0,100.0,num=npoints)
     
     tmin = -1.0
     sepmin = 1.0e30

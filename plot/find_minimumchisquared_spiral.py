@@ -33,7 +33,7 @@ if(spiralchoice =='logarithmic'):
 
 elif(spiralchoice=='hyperbolic'):
     optfunc = io_spiral.opt_chisquared_hypspiral
-    minit = [10.0,0,0]
+    minit = [10.0,0.0,0.0]
 
 elif(spiralchoice=='power'):
     optfunc = io_spiral.opt_chisquared_powspiral
@@ -88,6 +88,7 @@ for dumpfile in dumpfiles:
 
         spiralfits = mopt.x.tolist()
         spiralfits.insert(0,len(xi))
+        spiralfits.insert(0,ispiral)
         spiralfits.append(mopt.fun)
         spiralfits.append(xsign)
         spiralfits.append(ysign)
@@ -95,7 +96,11 @@ for dumpfile in dumpfiles:
 
     print chiminfits
     outputfile = dumpfile+'_spirals.chiminfits'
-    np.savetxt(outputfile,chiminfits,header="Minimum chisquared fits for "+spiraltext+" \n")
+    outputformat = '%3i %3i'
+    outputformat = outputformat +' %+7.5e '*(nparams+1)+'%i %i'
+
+
+    np.savetxt(outputfile,chiminfits,header="Minimum chisquared fits for "+spiraltext+" \n",fmt=outputformat)
 
 print "Done"                    
 
