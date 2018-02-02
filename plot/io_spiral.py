@@ -5,6 +5,35 @@ import numpy as np
 #
 
 
+spiralchoices = ['logarithmic','hyperbolic','rpitch']
+spiraltexts = ['Logarithmic Spiral', 'Hyperbolic Spiral', 'r-dependent pitch spiral']
+nspiralchoices = len(spiralchoices)
+nspiralparams = [4,3,8]
+
+def choose_spiral():
+
+    userselect = nspiralchoices+5
+    print 'Choose which type of spiral to analyse: '
+
+    while(userselect > nspiralchoices):
+
+        print 'Here are the options: ',nspiralchoices
+        for i in range (nspiralchoices):
+            print '(',i+1,'): ', spiralchoices[i]
+            
+        userselect = input('Make a selection: ')
+    
+    if userselect>nspiralchoices:
+        print "Choice out of range: please try again"
+    
+
+    spiralchoice = spiralchoices[userselect-1]
+    spiraltext = spiraltexts[userselect-1]
+    nparams = nspiralparams[userselect-1]
+    print spiraltext, " has been selected"
+    return spiralchoice,spiraltext,nparams
+
+
 def separation(x1,y1,x2,y2):
     '''Return separation of x y coordinates'''
     return np.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
@@ -138,7 +167,7 @@ def hypspiral_x(t,c,x0,xsign=1):
     return xsign*c*np.cos(t)/t + x0
 
 def hypspiral_y(t,c,y0,ysign=1):    
-    return ysign*c*np.cos(t)/t + y0
+    return ysign*c*np.sin(t)/t + y0
 
 def hypspiral_xm(t,m,xsign=1):    
     c = m[0]

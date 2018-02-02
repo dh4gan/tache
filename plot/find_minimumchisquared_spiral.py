@@ -2,13 +2,12 @@
 # Reads in the output from FORTRAN 90 code 'spiralfind'
 # (List of spiral files, with x y z points)
 
-# Uses scipy.optimise to find the minimum chisquared to find best fitting logarithmic spiral
-
+# Uses scipy.optimise to find the minimum chisquared to find best fitting spiral
 
 import filefinder as ff
 import numpy as np
 import sys
-from io_spiral import opt_chisquared_hypspiral
+import io_spiral
 import scipy.optimize
 
 #import corner as c
@@ -20,6 +19,28 @@ import scipy.optimize
 dumpfiles = np.loadtxt('spirallist.txt', dtype='string',skiprows=1)
 
 nanalyse = 15
+
+# Choose which spiral to fit
+
+spiralchoice,spiraltext,nparams = io_spiral.choose_spiral()
+
+# Must define text to go in .chiminfits file
+# Also pick function to minimise from
+
+
+if(spiralchoice =='logarithmic'):
+    optfunc = io_spiral.opt_chisquared_logspiral
+    minit = [10.0,0.1,0,0]
+
+elif(spiralchoice=='hyperbolic'):
+    optfunc = io_spiral.opt_chisquared_hypspiral
+    minit = [10.0,0,0]
+
+elif(spiralchoice=='rpitch'):
+    optfunc = io_spiral.opt_chisquared_rpitchspiral
+    minit = [150.0, 1.0, 2.0, 1.0, 400.0, 0.0, 0.0]
+
+
 
 try:
     nfiles = len(dumpfiles)
@@ -51,26 +72,27 @@ for dumpfile in dumpfiles:
         xi = data[:,0]
         yi = data[:,1]
 
-        m = np.zeros(3)
-        m[0] = 10.0
-        m[1] = 0.0
-        m[2] = 0.0    
+        m = minit
 
         npoints = 100 # Number of evaluations to find point distance in spiral model 
         xsign = 1.0
         ysign = -1.0
 
 
-        mopt = scipy.optimize.minimize(opt_chisquared_hypspiral,m,args=(xi,yi,npoints,xsign,ysign),method='Nelder-Mead') 
+        mopt = scipy.optimize.minimize(optfunc,m,args=(xi,yi,npoints,xsign,ysign),method='Nelder-Mead') 
 
         print mopt
 
-	chiminfits.append([ispiral,len(xi),mopt.x[0],mopt.x[1],mopt.x[2],mopt.fun,xsign,ysign])
-
+        spiralfits = mopt.x.tolist()
+        spiralfits.insert(0,len(xi))
+        spiralfits.append(mopt.fun)
+        spiralfits.append(xsign)
+        spiralfits.append(ysign)
+	chiminfits.append(spiralfits)
 
     print chiminfits
     outputfile = dumpfile+'_spirals.chiminfits'
-    np.savetxt(outputfile,chiminfits,header="Minimum chisquared fits for hyp spirals \n")
+    np.savetxt(outputfile,chiminfits,header="Minimum chisquared fits for "+spiraltext+" \n")
 
 print "Done"                    
 
