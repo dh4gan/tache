@@ -24,7 +24,6 @@ nanalyse = 15
 
 spiralchoice,spiraltext,nparams = io_spiral.choose_spiral()
 
-# Must define text to go in .chiminfits file
 # Also pick function to minimise from
 
 
