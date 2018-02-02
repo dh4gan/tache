@@ -5,10 +5,10 @@ import numpy as np
 #
 
 
-spiralchoices = ['logarithmic','hyperbolic','rpitch']
-spiraltexts = ['Logarithmic Spiral', 'Hyperbolic Spiral', 'r-dependent pitch spiral']
+spiralchoices = ['logarithmic','hyperbolic','power','rpitch']
+spiraltexts = ['Logarithmic Spiral', 'Hyperbolic Spiral','Power Spiral' 'r-dependent pitch spiral']
 nspiralchoices = len(spiralchoices)
-nspiralparams = [4,3,8]
+nspiralparams = [4,3,4,8]
 
 def choose_spiral():
 
@@ -266,6 +266,109 @@ def opt_chisquared_hypspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose
 # (n=1/2: Fermat Spiral)
 ############################################################################
 
+# Functions to deliver parametric form of spiral (x)
+def powspiral_x(t,a,n,x0,xsign=1):    
+    return xsign*a*pow(t,n)*np.cos(t) + x0
+
+# Overloaded function so that a single array of model parameters can be passed
+def powspiral_xm(t,m,xsign=1):
+    m[0] = a
+    m[1] = n
+    m[2] = x0
+
+    return powspiral_x(t,a,b,x0,xsign=xsign)
+
+# Same for y
+def powspiral_y(t,a,n,y0,ysign=1):    
+    return ysign*a*pow(t,n)*np.sin(t) + y0
+
+def powspiral_ym(t,m,ysign=1):
+    m[0] = a
+    m[1] = n
+    m[3] = y0
+
+    return powspiral_y(t,a,b,y0,ysign=ysign)
+    
+#
+# Generate x,y points for a logarithmic spiral curve
+#
+def generate_powspiral_curve(tmin,tmax,a,n,x0,y0,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a logarithmic spiral'''
+
+    t = np.linspace(tmin,tmax,num=npoints)
+    xspiral = np.zeros(npoints)
+    yspiral = np.zeros(npoints)
+
+    for i in range(npoints):
+        xspiral[i] = logspiral_x(t[i],a,n,x0,xsign=xsign)
+        yspiral[i] = logspiral_y(t[i],a,n,y0,ysign=ysign)
+    
+    return xspiral,yspiral
+
+def generate_powspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a logarithmic spiral'''
+    m[0] = a
+    m[1] = n
+    m[2] = x0
+    m[3] = y0
+    return generate_powspiral_curve(tmin,tmax,a,n,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
+
+
+# Find the minimum t value for (xi,yi) given spiral parameters (a,b,x0,y0)
+# Multiple local minima possible, must be careful
+
+def find_minimum_t_powspiral(xi,yi, a,n,x0,y0, npoints,xsign=1.0,ysign=1.0):
+    '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
+    
+    t = np.linspace(0.0,10.0,num=npoints)
+    
+    tmin = -1.0
+    sepmin = 1.0e30
+    
+    for i in range(npoints):
+        
+        x = powspiral_x(t[i], a, n, x0, xsign=xsign)
+        y = powspiral_y(t[i], a, n, y0, ysign=ysign)
+        
+        sep = separation(xi, yi, x, y)                
+        
+        if(sep<sepmin):
+            sepmin = sep
+            tmin = t[i]
+        
+
+    return tmin,sepmin
+
+def get_chisquared_powspiral(x,y,a,n,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+    '''Returns the chi-squared of a power spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    tmin = np.zeros(len(x))
+    sepmin = np.zeros(len(x))
+        
+    for i in range(len(x)):     
+        tmin[i], sepmin[i] = find_minimum_t_powspiral(x[i], y[i], a, n, x0, y0, npoints,xsign=xsign,ysign=ysign)    
+    
+    return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
+
+
+def opt_chisquared_powspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
+    '''Wrapper for scipy.optimize: the chi-squared of a logarithmic spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    a = m[0]
+    n = m[1]
+    x0 = m[2]
+    y0 = m[3]
+
+    chisquared = get_chisquared_powspiral(x,y,a,n,x0,y0,npoints,xsign,ysign,sigma)
+    if(verbose):print chisquared, m
+    return chisquared
+
+#
+# End of functions for power spirals
+#
+
 
 ############################################################################
 # Functions for spiral with r-dependent pitch angle ('rpitch')
@@ -400,3 +503,7 @@ def opt_chisquared_rpitchspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verb
 
     if(verbose):print chimin, m
     return chimin
+
+
+
+

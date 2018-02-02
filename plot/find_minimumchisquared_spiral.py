@@ -35,6 +35,10 @@ elif(spiralchoice=='hyperbolic'):
     optfunc = io_spiral.opt_chisquared_hypspiral
     minit = [10.0,0,0]
 
+elif(spiralchoice=='power'):
+    optfunc = io_spiral.opt_chisquared_powspiral
+    minit = [10.0,1.0,0.0,0.0]
+
 elif(spiralchoice=='rpitch'):
     optfunc = io_spiral.opt_chisquared_rpitchspiral
     minit = [150.0, 1.0, 2.0, 1.0, 400.0, 0.0, 0.0]
