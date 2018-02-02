@@ -1,5 +1,13 @@
 import numpy as np
 
+#
+# Functions for I/O etc
+#
+
+
+def separation(x1,y1,x2,y2):
+    '''Return separation of x y coordinates'''
+    return np.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
 
 def read_spiralmembership(filename):
     '''Reads the spiral membership data of all particles analysed'''
@@ -10,7 +18,13 @@ def read_spiralmembership(filename):
     spiralmember = spiraldata[:,4]
     return x,y,z,spiralmember
 
-# Functions to deliver parametric forms of spiral (x) (and derivatives)
+
+############################################
+# Functions for fitting logarithmic spirals
+############################################
+
+
+# Functions to deliver parametric form of spiral (x)
 def logspiral_x(t,a,b,x0,xsign=1):    
     return xsign*a*np.exp(b*t)*np.cos(t) + x0
 
@@ -22,14 +36,7 @@ def logspiral_xm(t,m,xsign=1):
 
     return logspiral_x(t,a,b,x0,xsign=xsign)
 
-def logspiral_dx(t,a,b,x0,xsign=1):    
-    return -xsign*b*a*np.exp(b*t)*np.sin(t)
-
-def logspiral_d2x(t,a,b,x0,xsign=1):    
-    return -xsign*b*b*a*np.exp(b*t)*np.cos(t)
-
 # Same for y
-
 def logspiral_y(t,a,b,y0,ysign=1):    
     return ysign*a*np.exp(b*t)*np.sin(t) + y0
 
@@ -40,16 +47,11 @@ def logspiral_ym(t,m,ysign=1):
 
     return logspiral_y(t,a,b,y0,ysign=ysign)
     
-
-def logspiral_dy(t,a,b,y0,ysign=1):    
-    return ysign*b*a*np.exp(b*t)*np.cos(t)
-
-def logspiral_d2y(t,a,b,y0,ysign=1):    
-    return -ysign*b*b*a*np.exp(b*t)*np.sin(t)
-
-
+#
+# Generate x,y points for a logarithmic spiral curve
+#
 def generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
-    # Generate spiral curve for this fit
+    '''Generate x,y, points of a logarithmic spiral'''
 
     t = np.linspace(tmin,tmax,num=npoints)
     xspiral = np.zeros(npoints)
@@ -61,7 +63,8 @@ def generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=1,ysign=1,npoints=100):
     
     return xspiral,yspiral
 
-def generate_logspiral_curve(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+def generate_logspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a logarithmic spiral'''
     m[0] = a
     m[1] = b
     m[2] = x0
@@ -69,9 +72,177 @@ def generate_logspiral_curve(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
     return generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
 
 
+# Find the minimum t value for (xi,yi) given spiral parameters (a,b,x0,y0)
+# Multiple local minima possible, must be careful
 
-# Functions for spiral with r-dependent pitch angle
+def find_minimum_t_logspiral(xi,yi, a,b,x0,y0, npoints,xsign=1.0,ysign=1.0):
+    '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
+    
+    t = np.linspace(0.0,10.0,num=npoints)
+    
+    tmin = -1.0
+    sepmin = 1.0e30
+    
+    for i in range(npoints):
+        
+        x = logspiral_x(t[i], a, b, x0, xsign=xsign)
+        y = logspiral_y(t[i], a, b, y0, ysign=ysign)
+        
+        sep = separation(xi, yi, x, y)                
+        
+        if(sep<sepmin):
+            sepmin = sep
+            tmin = t[i]
+        
+
+    return tmin,sepmin
+
+def get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+    '''Returns the chi-squared of a logarithmic spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    tmin = np.zeros(len(x))
+    sepmin = np.zeros(len(x))
+        
+    for i in range(len(x)):     
+        tmin[i], sepmin[i] = find_minimum_t_logspiral(x[i], y[i], a, b, x0, y0, npoints,xsign=xsign,ysign=ysign)    
+    
+    return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
+
+
+def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
+    '''Wrapper for scipy.optimize: the chi-squared of a logarithmic spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    a = m[0]
+    b = m[1]
+    x0 = m[2]
+    y0 = m[3]
+
+    chisquared = get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign,ysign,sigma)
+    if(verbose):print chisquared, m
+    return chisquared
+
+#
+# End of functions for logarithmic spirals
+#
+
+
+##########################################
+# Functions for hyperbolic spiral
+#########################################
+
+# Parametric Functions
+
+def hypspiral_x(t,c,x0,xsign=1):    
+    return xsign*c*np.cos(t)/t + x0
+
+def hypspiral_y(t,c,y0,ysign=1):    
+    return ysign*c*np.cos(t)/t + y0
+
+def hypspiral_xm(t,m,xsign=1):    
+    c = m[0]
+    x0 = m[1]
+    return hyperbolic_spiralx(t,c,x0,xsign)
+
+def hypspiral_ym(t,m,ysign=1):    
+    c = m[0]
+    y0 = m[2]
+    return hyperbolic_spiralx(t,c,y0,ysign)
+
+
+#
+# Generate x,y points for a hyperbolic spiral curve
+#
+def generate_hypspiral_curve(tmin,tmax,c,x0,y0,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a hyperbolic spiral'''
+
+    t = np.linspace(tmin,tmax,num=npoints)
+    xspiral = np.zeros(npoints)
+    yspiral = np.zeros(npoints)
+
+    for i in range(npoints):
+        xspiral[i] = hypspiral_x(t[i],c,x0,xsign=xsign)
+        yspiral[i] = hypspiral_y(t[i],c,y0,ysign=ysign)
+    
+    return xspiral,yspiral
+
+def generate_hypspiral_curvem(tmin,tmax,m,xsign=1,ysign=1,npoints=100):
+    '''Generate x,y, points of a hyperbolic spiral'''
+    m[0] = c
+    m[1] = x0
+    m[2] = y0
+
+    return generate_logspiral_curve(tmin,tmax,a,b,x0,y0,xsign=xsign,ysign=ysign,npoints=npoints)
+
+
+# Find the minimum t value for (xi,yi) given spiral parameters (a,b,x0,y0)
+# Multiple local minima possible, must be careful
+
+def find_minimum_t_hypspiral(xi,yi, c,x0,y0, npoints,xsign=1.0,ysign=1.0):
+    '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
+    
+    t = np.linspace(0.0,100.0,num=npoints)
+    
+    tmin = -1.0
+    sepmin = 1.0e30
+    
+    for i in range(npoints):
+        
+        x = hypspiral_x(t[i], c, x0, xsign=xsign)
+        y = hypspiral_y(t[i], c, y0, ysign=ysign)
+        
+        sep = separation(xi, yi, x, y)                
+        
+        if(sep<sepmin):
+            sepmin = sep
+            tmin = t[i]
+        
+
+    return tmin,sepmin
+
+def get_chisquared_hypspiral(x,y,c,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
+    '''Returns the chi-squared of a hyperbolic spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    tmin = np.zeros(len(x))
+    sepmin = np.zeros(len(x))
+        
+    for i in range(len(x)):     
+        tmin[i], sepmin[i] = find_minimum_t_hypspiral(x[i], y[i], c, x0, y0, npoints,xsign=xsign,ysign=ysign)    
+    
+    return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
+
+
+def opt_chisquared_hypspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
+    '''Wrapper for scipy.optimize: the chi-squared of a hyperbolic spiral model given arrays x,y
+    Assumes uniform errors'''
+    
+    c = m[0]    
+    x0 = m[1]
+    y0 = m[2]
+
+    chisquared = get_chisquared_hypspiral(x,y,c,x0,y0,npoints,xsign,ysign,sigma)
+    if(verbose):print chisquared, m
+    return chisquared
+
+#
+# End of hyperbolic spiral functions
+#
+
+
+############################################################################
+# Power spiral functions (r = a*theta^n)
+# (n=1: Archimedes spiral)
+# (n=1/2: Fermat Spiral)
+############################################################################
+
+
+############################################################################
+# Functions for spiral with r-dependent pitch angle ('rpitch')
+# Expected for tidally driven arms by low mass companions in low mass discs
 # (Zhu et al (2015), ApJ 813:88
+############################################################################
 
 def rpitch_phi(a,hp,alpha,eta,r,rp):
     b = (hp/rp)*np.power(rp/r,1.0+eta)*np.power(r,alpha)/np.abs(np.power(r,alpha)-np.power(rp,alpha))
@@ -140,36 +311,9 @@ def rpitchspiral_ym(t,m,r,xsign=1):
     return rpitchspiral_x(t,a,hp,alpha,eta,r,rp,y0,ysign=ysign)
 
 
-def separation(x1,y1,x2,y2):
-    '''Return separation of x y coordinates'''
-    return np.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
+
     
 
-
-# Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)
-# Multiple local minima possible, must be careful
-
-def find_minimum_t_logspiral(xi,yi, a,b,x0,y0, npoints,xsign=1.0,ysign=1.0):
-    '''Find the minimum t value for points (xi,yi) given spiral parameters (a,b,x0,y0)'''
-    
-    t = np.linspace(0.0,10.0,num=npoints)
-    
-    tmin = -1.0
-    sepmin = 1.0e30
-    
-    for i in range(npoints):
-        
-        x = logspiral_x(t[i], a, b, x0, xsign=xsign)
-        y = logspiral_y(t[i], a, b, y0, ysign=ysign)
-        
-        sep = separation(xi, yi, x, y)                
-        
-        if(sep<sepmin):
-            sepmin = sep
-            tmin = t[i]
-        
-
-    return tmin,sepmin
 
 
 def find_minimum_t_rpitchspiral(xi,yi, a,hp,alpha,eta,rp,x0,y0, npoints,xsign=1.0,ysign=1.0):
@@ -195,31 +339,7 @@ def find_minimum_t_rpitchspiral(xi,yi, a,hp,alpha,eta,rp,x0,y0, npoints,xsign=1.
     return tmin,sepmin
 
 
-def get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
-    '''Returns the chi-squared of a logarithmic spiral model given arrays x,y
-    Assumes uniform errors'''
-    
-    tmin = np.zeros(len(x))
-    sepmin = np.zeros(len(x))
-        
-    for i in range(len(x)):     
-        tmin[i], sepmin[i] = find_minimum_t_logspiral(x[i], y[i], a, b, x0, y0, npoints,xsign=xsign,ysign=ysign)    
-    
-    return np.sum(sepmin)/(2.0*len(x)*sigma*sigma)
 
-
-def opt_chisquared_logspiral(m,x,y,npoints,xsign=1.0,ysign=1.0,sigma=1.0,verbose=True):
-    '''Wrapper for scipy.optimize: the chi-squared of a logarithmic spiral model given arrays x,y
-    Assumes uniform errors'''
-    
-    a = m[0]
-    b = m[1]
-    x0 = m[2]
-    y0 = m[3]
-
-    chisquared = get_chisquared_logspiral(x,y,a,b,x0,y0,npoints,xsign,ysign,sigma)
-    if(verbose):print chisquared, m
-    return chisquared
 
 def get_chisquared_rpitchspiral(x,y,a,hp,alpha,eta,rp,x0,y0,npoints,xsign=1.0,ysign=1.0,sigma=1.0):
 
