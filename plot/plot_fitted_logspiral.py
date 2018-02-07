@@ -55,7 +55,7 @@ chicol = 6
 xsigncol = 7
 ysigncol = 8
 
-fitfile = dumpfile+'_spirals.chimin'
+fitfile = dumpfile+'_spirals.chiminfits'
 npoints = 100
 
 print 'Reading fitted parameters from file ', fitfile

@@ -18,7 +18,8 @@ import scipy.optimize
 # Load dumpfile names from spirallist.txt
 dumpfiles = np.loadtxt('spirallist.txt', dtype='string',skiprows=1)
 
-nanalyse = 15
+nanalyse = 2
+npoints = 100 # Number of evaluations to find point distance in spiral model 
 
 # Choose which spiral to fit
 
@@ -29,15 +30,19 @@ spiralchoice,spiraltext,nparams = io_spiral.choose_spiral()
 
 if(spiralchoice =='logarithmic'):
     optfunc = io_spiral.opt_chisquared_logspiral
-    minit = [10.0,0.1,0,0]
+    minit = [70.0,0.1,0,0]
+
+if(spiralchoice == 'varlogarithmic'):
+    optfunc = io_spiral.opt_chisquared_varlogspiral
+    minit = [30.0,0.1,0.0,0.0,0.0]
 
 elif(spiralchoice=='hyperbolic'):
     optfunc = io_spiral.opt_chisquared_hypspiral
-    minit = [10.0,0.0,0.0]
+    minit = [1.0e5,0.0,0.0]
 
 elif(spiralchoice=='power'):
     optfunc = io_spiral.opt_chisquared_powspiral
-    minit = [10.0,1.0,0.0,0.0]
+    minit = [100.0,0.7,0.0,0.0]
 
 elif(spiralchoice=='rpitch'):
     optfunc = io_spiral.opt_chisquared_rpitchspiral
@@ -77,7 +82,7 @@ for dumpfile in dumpfiles:
 
         m = minit
 
-        npoints = 100 # Number of evaluations to find point distance in spiral model 
+       
         xsign = 1.0
         ysign = -1.0
 
